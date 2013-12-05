@@ -1,0 +1,5 @@
+# Testing erroneous program definition (missing event-condition keyword)
+configuration hello { nullApp() nullNet() nullMac() nullRadio() }
+bar { timer = 8192 TYPE_SECOND }
+start hello
+

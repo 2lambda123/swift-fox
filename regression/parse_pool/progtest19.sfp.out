@@ -1,0 +1,5 @@
+
+sfc in program parse_pool/progtest19.sfp
+syntax error at line 2, position 53:
+configuration hello { nullApp() nullNet() nullMac() start() } 
+                                                    ^

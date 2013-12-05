@@ -1,0 +1,7 @@
+# Testing erroneous program definition (configuration state)
+configuration hello { nullApp() nullNet() nullMac() nullRadio() } 
+
+configuration control { cuApp() cuNet() cuMac(10, 10, 1, 1, 1) cc2420 }
+
+start hello
+

@@ -1,0 +1,2 @@
+# Testing erroneous program definition 
+use application test_blink $(FENNEC_FOX_LIB)/Application/SimpleBlink ()

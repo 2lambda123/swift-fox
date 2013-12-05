@@ -1,0 +1,3 @@
+# Testing erroneous semantic definition (not enought of parameteres)
+configuration hello { test_blink(1) nullNet() nullMac() nullRadio() }
+start hello

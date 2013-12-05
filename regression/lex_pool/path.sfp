@@ -1,0 +1,2 @@
+# Testing PATH token
+/x/y/z	../tmp ./dummy/foo $(FENNEC_FOX_LIB)/test-up_down

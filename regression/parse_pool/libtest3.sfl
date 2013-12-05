@@ -1,0 +1,2 @@
+# Testing erroneous library definition 
+use application use $(FENNEC_FOX_LIB)/Application/SimpleBlink

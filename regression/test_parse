@@ -1,0 +1,44 @@
+#!/bin/bash
+# Swift Fox Compiler v0 .2
+# Authors: Vasileios P. Kemerlis, Marcin Szczodrak
+# Date: December 4, 2012
+
+# pool with parser input
+POOL_DIR="parse_pool"
+# Swift Fox extensions
+SF_EXT="*.sfp"
+# regression test suite
+REG_TEXT="/usr/local/bin/sfc"
+# temporary output
+TMP_OUT="/tmp/real_out.sfp"
+
+#verbose
+echo "Parser regression testing"
+
+# test counter
+count=0;
+
+# get Swift Fox programs
+for PROG in `ls $POOL_DIR/$SF_EXT`; do
+	# expected output
+	EXP_OUT=$PROG.out
+
+	# call the regression test suite
+	$REG_TEXT ${PROG:0:${#PROG}-4} 2> $TMP_OUT
+
+	# verbose
+	count=$((++count));
+	echo -n "    [$count]"
+	echo -n `head -n1 $PROG`;
+	echo -n ": ";
+
+	# check for expected behavior
+        #cat $EXP_OUT
+        #cat $TMP_OUT
+	diff $EXP_OUT $TMP_OUT >> /dev/null
+        if (( $? == 0 )); then
+               echo -e "\E[32mSuccess\033[0m";
+        else
+                echo -e "\E[31mFailed ($PROG)\033[0m"
+        fi
+done

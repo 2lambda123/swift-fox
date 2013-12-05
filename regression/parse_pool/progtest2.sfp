@@ -1,0 +1,4 @@
+# Testing erroneous program definition (invalid identifier)
+configuration and { test_blink() nullNet() nullMac() nullRadio() } 
+start and
+

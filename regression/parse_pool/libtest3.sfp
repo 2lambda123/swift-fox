@@ -1,0 +1,4 @@
+# Testing erroneous library definition (invalid identifier)
+configuration empty { nullApp() nullNet() nullMac() nullRadio()  }
+start empty
+

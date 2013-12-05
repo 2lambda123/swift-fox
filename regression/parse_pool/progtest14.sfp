@@ -1,0 +1,8 @@
+# Testing erroneous program definition (missing () next to application module)
+configuration foo { nullApp nullNet() nullMac() nullRadio() }
+event-condition bar { timer = 8192 TYPE_SECOND }
+
+any goto foo when bar
+
+start foo
+

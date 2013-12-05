@@ -1,0 +1,4 @@
+# Testing erroneous program definition (invalid network)
+configuration hello { nullApp() start() nullMac() nullRadio() } 
+start hello
+

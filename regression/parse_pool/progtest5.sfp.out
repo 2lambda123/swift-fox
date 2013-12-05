@@ -1,0 +1,5 @@
+
+sfc in program parse_pool/progtest5.sfp
+syntax error at line 2, position 23:
+configuration hello { or() nullNet() nullMac() nullRadio() } 
+                      ^

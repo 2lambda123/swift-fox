@@ -1,0 +1,13 @@
+# Testing erroneous semantic definition (undeclared source of event)
+configuration dummy { nullApp() nullNet() nullMac() nullRadio() }
+configuration hello { test_blink() nullNet() nullMac() nullRadio() }
+configuration sleep { nullApp() nullNet() nullMac() nullRadio() }
+
+event-condition keep_blink {timerrrrrrrrr = 8192 TYPE_SECOND }
+event-condition no_blink {timer = 4096 TYPE_SECOND }
+
+from hello goto sleep when keep_blink
+from sleep goto hello when no_blink
+
+start hello
+

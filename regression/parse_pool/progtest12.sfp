@@ -1,0 +1,8 @@
+# Testing erroneous program definition (missing when keyword)
+configuration foo { nullApp() nullNet() nullMac() nullRadio() }
+event-condition bar { timer = 8192 TYPE_SECOND }
+
+from any goto foo bar
+
+start foo
+

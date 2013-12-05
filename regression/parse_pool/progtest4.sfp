@@ -1,0 +1,4 @@
+# Testing erroneous program definition (missing closing brace)
+configuration hello { test_blink() nullNet() nullMac() nullRadio()
+start hello
+
