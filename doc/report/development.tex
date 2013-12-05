@@ -1,0 +1,64 @@
+\section{Development Environment (\textit{Yiwei})}
+
+\subsection{Platforms}
+
+The team used various development environments to code different sections
+of the compiler. Members used whichever platform they were most comfortable
+and familiar with. Our code was run and tested on Windows, Mac, Linux, and
+Unix. The full environment consists of Tiny OS \cite{dunkels:2004a} and
+Fennec Fox installations, among other things as software, and the sensor
+motes as the most important hardware. However, for an experimenter to try
+out our compiler the aforementioned software and hardware are not needed;
+the compiler will produce the output nesC code independently. It just that
+the experimenter will not be able to see the generated code running. That
+was also the case for our team since we do not have the capability to
+equip a full system for each team member. Still we are able to develop the code in individual machines throughout the project.
+
+\subsection{Programming Tools}
+
+In order to develop the Swift Fox language, Flex and Bison were used to
+create the lexer and parser. Any other code in the lexer and parser were
+written in C. Due to the original Fennec Fox that Swift Fox is intended to 
+be built on top of, our target language is nesC \cite{gay:2003}. Since nesC
+is a close variant of C, we chose to use C code to do code generation into 
+nesC, as well as error checking. Code for defining the tree nodes,
+traversal, code generation and error generation have their individual
+\texttt{.h} and \texttt{.c} files and are linked together using the
+corresponding makefiles. The Makefile compiles all necessary \texttt{.c}
+files and creates a Swift Fox program. In addition, simple shell scripts
+were created to compile, run and clean the \texttt{.o} files at the end of 
+tests. The majority of the functions required the standard C library
+as well as the standard I/O library. For code editing, individual members
+used Eclipse, Notepad++, or Vi.
+
+\subsection{Management Tools}
+
+To synchronize code in a distributed developing environment, the team used 
+Subversion (SVN) as a repository for code (and also documentation). In
+combination with SVN, Trac was used to keep track of deadlines,
+documentation, and tickets. Other alternatives such as DropBox, Google Docs
+were considered but since there is a strong likelihood of future code
+development of Swift Fox, code needed to be public and a website needed to 
+be created for both the posting of code and extensive documentation for
+future developers or users. In the end, a web server running Trac was set
+up 
+
+Trac is a free open source web-development tool to assist with project
+management. It allows maintaining all aspects of the project in one place, 
+like:
+\begin{itemize}
+	\item wiki. Common definition, role assignment, meeting minutes,
+	tools used, and so forth
+	\item timelines. Keeping track of who did what and when, ticketing
+	assignment and progress watching of bite-sized tasks
+	\item code plus document repository. Using track we are able to
+	look at the code resided in SVN repository right from browser
+	window, which is very convenient. 
+\end{itemize}
+
+Nevertheless, there were some synchronization problems with SVN. While Trac
+reduced some synchronization issues, email alerts as to which member was
+currently editing which part of code were still frequent. Also, certain
+files and folder needed to be copied and edited locally in order to prevent
+corruption of the repository. By the end of the project, most of these
+issues were eliminated.

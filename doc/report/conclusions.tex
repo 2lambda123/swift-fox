@@ -1,0 +1,235 @@
+\section{Conclusions}
+
+\subsection{Lessons Learned as a Team}
+
+\begin{enumerate}
+
+\item \underline{Testing is important}. We have a very strict requirement
+that at each phase of the development, components must be tested thoroughly
+before going on to the next. For example, we created test drivers for the
+lexer and parser separately. For each of those, test cases were created
+right from the beginning both systematic and on the fly. By systematic we
+list out the scenarios, from simple to complex, having from a two statement
+program to dozen lines of code (Swift Fox programs are not needed to be
+hundreds of lines though, thanks to its abstraction of lower level senor
+net details). We also tested for boundary cases, ambiguous, duplications
+declarations, and even typos that may lead to program running rampant. By
+on the fly, any bugs that we accidentally found while coding are saved as
+test cases, to make sure that any changes later will not repeat those
+errors.
+
+Phase testing helps us get rid of possible confusions later when we do not 
+know where the errors came from. After the lexer and parser were running
+fine, we mainly debug the parse tree structure and traversing algorithm,
+without worrying about grammar and syntax bugs.
+
+Sometimes our program cannot pass through the test, and due to complexities
+of the grammar and data structures defined, we have to simplify the
+features, for example, cutting data nodes off the tree, omit several
+grammar definitions, in order to pin-point location of the error. That is
+essentially debugging in the name of testing.
+
+\item \underline{Documentation helps}. Right from beginning, thanks to our 
+team experts in \LaTeX and research style documentation, the documents are 
+clear, concise and informative. They are not just to demonstrate our work
+to professor and tutors but actually are anchor points for us to refer to
+whenever needed. In fact, the language is proposed by one of the authors,
+so at the beginning not all of us understood what it is, or what it is
+supposed to do. That is where the white paper cames in handy. Later by
+writing, reading, and agreeing to the language manual, we were able to
+implement the language step by step, following whatever is defined. The
+tutorial helps us verify if we really did what we claim.
+
+\item \underline{Project management}. We followed a software development
+style of project management with project repository, timeline and task
+assignment. For source code repository we used Subversion so that we can
+keep track of each member code contribution, revise changes and recovery
+from erroneous check ins. The timeline and ticketing system allowed us to
+keep track of progress and missed deadlines.
+\end{enumerate}
+
+Still, project management is hard. One reason is that not all of us were
+familiar with the procedures of management software and style. Sometimes
+members were too busy, or forgot to update their work status, which left
+other members in bewilderment. Overtime we really had to be flexible, by
+either emailing or call directly, or sit down together in pair to do the
+work effectively. The lesson here is that not all people follow the same
+disciplines. And given no power of, say, moneytary punishment as in
+corporate setting, we really have to adapt to soft power management, both
+encouragement and critics. We realize that this is not just a compiler
+course, or software development project but also a course to understand on 
+human dynamics, being understanding, tolerable as managers, more
+responsible, adherent to principles, deadlines, procedures, and strictly
+following event document writing styles.
+
+\subsection{Lessons Learned by Each Team Member}
+
+\subsubsection{Marcin}
+
+As a group we were holding the meetings, which often were missing by those 
+who need to be present at most. As a result, following meetings and emails 
+were wasted to make sure that everyone is on the same page, but never was.
+Until midterm time the general understanding of what is lexer and parser
+was missing as well as understanding of how flex and bison work. In my
+opinion, that was the main cause for some members to fail programming
+attempts, or provide code that did not fit into the compiler's
+architecture. 
+
+Lesson learned: \textit{for every project one needs to put a lot of
+effort to start well, including efforts to find team members}.
+
+\subsubsection{Vasileios}
+
+Above all, group dynamics is the key to success. No matter how good an idea
+is, or how much willingness some members of a group share for implementing
+something interesting and novel, the well-being of the group as a ``whole''
+significantly affects the final outcome. 
+
+Lesson learned: \textit{better alone, or with a small and agile team,
+rather than with an cumbersome group}.
+
+\subsubsection{Linh}
+
+I learned from this project to be more responsible in a distributed
+development environment. Departing from group work, ``code-camp'' style, I 
+need to be more independent working, deadline adherence, need to catch up
+quickly with other members. I also learned the working style from the two
+active members in our group. One has very good management skills, keeping
+timeline \& meetings on track, resolving conflicts and even arguments,
+while the other is excellent at implementation and research work. 
+
+Due to the peculiarities of our programming in which one member knows the
+language best, I find it tough as a regular member to take initiative in
+implementing the next step. However, that should not be an excuse as I
+should have understood and equipped myself better with the theory and
+practice of the tools taught in class (\textit{e.g.,} Lex, Yacc and even C 
+language). I was confident in this project hoping to work on nesC and
+TinyOS, the platform that I worked on extensively before, but it turned out
+we were more about the higher, policy management level, which I am
+unfamiliar with.
+
+From our miss-communications during the project, I really got confused and did not really know what the project manager expect to do next. The code
+one writes partly gets, instead of commenting to improve, whitewashed
+completely (admitting that it is of poor quality but still it does the
+same task). That is when I find face to face talk is always better than
+expressing through emails. Face to face discussion prevents further
+misunderstanding and resentment from harsh words that we use in our
+writing, which not in any sense pushing the progress forward.
+
+\subsubsection{Yiwei}
+
+One of the lessons learned from the project is that when coding in teams,
+there will be some code redundancy. I wrote certain code that was either
+misplaced or implemented in a way that was not compatible with existing
+code. Sometimes, certain code can be reused or recycled but other times,
+code was useless to the project. For example, the code for the symbol table
+was written in the lexer but should have been done in the parser as the
+table was needed in the parser but not necessarily in the lexer. In the
+future, it would be prudent to discuss the overall plan before coding each 
+individual segment to ease the process of integrating various parts of the 
+project. 
+
+\subsection{Advice for Future Teams}
+
+\subsubsection{Marcin}
+
+As a project manager I would suggest only one: start well 
+and make sure that the first steps are done well, including collecting team
+members.
+
+\subsubsection{Vasileios}
+
+Start early, choose wisely your team members, and most importantly keep the
+complexity of your language low. The communication overhead on a group is
+significant; keep the language complexity low so as to be able to keep up
+with the deadlines.
+
+\subsubsection{Linh}
+
+From my experience of being assigned the task of Tester and 
+Validator, it is important to be able to understand the language that the
+team want to implement ahead of time and other members. Without this
+understanding, the tester cannot really know what is going on, what to
+test and what to expect. One should gain that knowledge at beginning from
+the language guru and system architect in order to do the testing
+effectively. Moreover, one must make full communication with the two right 
+from the designing phase.
+
+Another important aspect in project development is to keep each member of
+the team on par with each other in terms of working environment
+(\texttt{i.e.} each must have a same copy of the code running, having the
+same system environment settings, the same set of software and tools
+installed). After all that, each must know the steps to run at each
+working session. For example, if one has his full system running together
+with the larger research work, but other members do not and only have
+a simple terminal window, the latter will get confused in how to run the
+code, especially when error starts to spring up.
+
+A solution for every one to be at the same stage is to have coding
+sessions. One cannot: simply assume that by sending email and giving people
+documents, they will read, not to mention understand them. Coding sessions,
+just like we all have to go to work in the office instead of teleworking
+from home, is so that you know where they are stuck, and also how far
+others can be ahead of you. It is both a motivating environment for
+possible ``slackers'' as well as a reality check for the project manager.
+It also weeds out a lot of unnecessary glitches in development due to
+simple settings, simple errors that individual coders may commit.
+
+Dealing with ``slack'' members: first we need to understand that no one
+wants to be the blacksheep in the team, no one wants to receive harsh
+comments from the other, or bad grade. Secondly, each member have his own
+constraints and commitments. The best way to deal with slackers is to get
+them work together in coding session, they cannot work independent.
+Although that might be time consuming at first, the learning curve will get
+better along the way rather than leave it so steep that later they cannot
+catch up anymore. Also, we should not expecting everyone to be good coder, 
+and we can hardly form a all-genius team, still a good and successful team 
+is a team that can work together, where less excellent or even lazy members
+can be utilized.
+
+\subsection{Suggestions for the Instructor}
+ 
+\begin{enumerate}
+
+\item Require homework assignments: homeworks force students to read and 
+understand the material. By understanding how generally compilers work is
+necessary for an individual student to contribute to the team's work and
+to understand how various components of the language should be designed and
+implemented. Catching-up with the material around the midterm time can be
+to late to contribute to the team's work. 
+
+\item Motivate to work: the assignments that are titled ``written by the
+entire team'' failed to be done with the contribution of each member. It
+was hard to achieve some work contribution from each member for the first
+milestone, and was getting worse as following milestones were getting more 
+complicated. This problem leads to conclusion that single grade for the
+whole group may not be the right approach.
+
+\item Group forming: through Courseworks, the course already offers good
+organization in terms of allowing people to make a proposal and cite role
+preference. It will be much more beneficial if each student announces their
+working style, for example people with deadline oriented style should be
+grouped together, in contrast to people who are process oriented; whether
+they can work through emails, or must be in group.
+
+\item Programming skills: A simple programming test should also be made as 
+a non-grading test at the beginning. Most of the time students claim that
+they are good at this, or good at that, which seems like they are good at
+programming in general. While in fact, most of the time one is only good
+at one language, be it Java, C/C++, \textit{etc} but not another. Making
+the result of these tests available to all members allowing forming best
+team mates and so that one do not get into a language they are unfamiliar
+with.
+
+\item Materials: regarding the materials in the book and course, although
+languages like Fortran and Cobol might serve as fundamentals and for
+historical accounts, they are totally strangers to many of us. They can be 
+skipped in order to not distract us from the theory behind which really
+matters.
+
+\item Lectures: more upbeat lectures will keep student motivated and
+focused. Physiologically, simply by suddenly changing the light can grab
+students back to full attention (and wake some students up as well).
+
+\end{enumerate}
+

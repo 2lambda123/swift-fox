@@ -1,0 +1,27 @@
+/* mote architecture */
+graph mote_arch {
+	
+	/* components */
+	node [shape=box, label="micro-controller"] micro_controller; 
+	node [shape=tab, label="transceiver"] transceiver; 
+	node [shape=Mcircle, label="power"] power; 
+	node [shape=folder, label="external memory"] ext_memory;
+	node [shape=component, label="ADC"] adc;
+	node [shape=circle, label="sensor 1"] sensor1;
+	node [shape=circle, label="sensor 2"] sensor2;
+	node [shape=plaintext, label="..."] sensors;
+	node [shape=circle, label="sensor n"] sensorN;
+
+	/* connectivity */
+	micro_controller -- transceiver;
+	micro_controller -- ext_memory;
+	micro_controller -- power;
+	micro_controller -- adc;
+	adc -- sensor1;
+	adc -- sensor2;
+	adc -- sensors [style=invis]; 
+	adc -- sensorN;
+	
+	/* align */
+	center=true;
+}

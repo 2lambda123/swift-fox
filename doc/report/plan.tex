@@ -1,0 +1,145 @@
+\section{Project Plan (\textit{Marcin})}
+\label{sec:project_plan}
+
+\subsection{Development Process}
+
+To develop the language and its translator we were meeting at least once a 
+week and were using software / project management tools to enhance the
+development process. As a group we have met 13 times, and our team has also
+met 7 times with the group's mentor, Prof. Alfred Aho. During the meetings 
+we were brainstorming how Swift Fox should be designed and implemented.
+Moreover, we were ensuring that we are on the right track to meet the
+milestone submissions, and if necessary we were rescheduling the roles and 
+assignments to meet the deadlines. The rule of thumb which was kept by the 
+project manager was to have draft / alpha version of a document, or a code,
+to be ready a week before the milestone date set by the instructor. Although this
+last week before submission was expected to be used for polishing the final
+work, corrections, and debugging, it was also used to finish the work which
+was missed by other members of the group. 
+
+To improve work assignment, keep work schedule on time, and improve
+software engineering practice, a dedicated server with a web-based project
+management and bug-tracking tool was setup on the Network Security
+Research Lab (NSL) \cite{nsl}. Vasileios has dedicated a server and
+installed Trac \cite{trac}. Trac is a project management tool with wiki
+interface, ticket scheduling system, and source code repository. All group 
+members received accounts on the server and have access to the Trac
+management portal through the address
+\url{http://nslvm2.cs.columbia.edu/trac/wiki}. After every meeting, job
+tickets were assigned and all members could track the progress of the team 
+work. Unfortunately, after a month the excitement from using Trac has
+fallen down, and some members stopped using the tool.
+
+\subsection{Roles and Responsibilities}
+
+The group was started with three members: Marcin, Vasileios, and Linh.
+After Yiwei joined us, we assigned the roles, which in practice were often 
+reassigned to meet various milestones.
+
+\begin{itemize}
+	\item Project manager - Marcin (Vasileios was the second project
+	manager)\\Marcin kept the project schedule, hold weekly meetings
+	with the entire team, maintained the project log, and made sure
+	the project deliverables get done on time
+	\item Language and tools guru - Vasileios\\
+	Vasileios defined the baseline process to track language changes
+	and maintained the intellectual integrity of the language. Moreover
+	he was teaching the team how to utilize the various tools used to
+	build the compiler
+	\item System architect - Marcin\\
+	Based on Fennec Fox platform, Marcin defined the compiler
+	architecture, modules, and interfaces
+	\item System integrator - Yiwei\\
+	For system integration, Yiwei designed the syntax tree traversal
+	subsystem, which was used in the semantic check and code generation 
+	steps
+	\item Tester and validator - Linh (Vasileios was actually designing
+	and coding the test suit)\\
+	Linh was attempting to create the testing suit
+\end{itemize}
+
+\subsection{Implementation}
+
+Swift Fox documentation was implemented using \LaTeX  and the code was
+implemented in C. Both documentation and code were stored in the svn \cite{svn}
+repository and managed using Trac \cite{trac} project management tool.
+
+\begin{enumerate}
+  \item Swift Fox Whitepaper
+    \begin{itemize}
+      \item Introduction and Problem Statement\\\textit{Marcin and Vasileios}
+      \item Buzzwords: simple, declarative, domain specific, lightweight\\\textit{Linh}
+      \item Buzzwords: network-savvy, platform independent, event-driven\\\textit{Marcin}
+      \item Buzzwords: robust, secure, policy-oriented\\\textit{Vasileios}
+      \item Draft Review\\\textit{Marcin, Vasileios, Yiwei}
+    \end{itemize}
+
+  \item Swift Fox Tutorial \& Manual
+    \begin{itemize}
+      \item Tutorial\\\textit{Marcin}
+      \item Manual\\\textit{Vasileios}
+      \item Draft Review\\\textit{Marcin and Vasileios}
+    \end{itemize}
+
+  \item Class Presentation
+    \begin{itemize}
+     \item Graphics and Text\\\textit{Marcin and Vasileios}  
+     \item Implementing Presentation in \LaTeX\\\textit{Vasileios}
+     \item Practice Presentation Meeting\\\textit{Marcin, Vasileios, Linh, Yiwei}
+    \end{itemize}
+
+  \item Swift Fox Compiler Code
+    \begin{itemize}
+      \item Lexer\\\textit{Marcin and Vasileios}
+      \item Parser\\\textit{Marcin}
+      \item Code Generation\\\textit{Marcin}
+      \item Test Suit\\\textit{Vasileios}
+      \item Semantic Check\\\textit{Vasileios}
+      \item Tree Traversal\\{Yiwei}
+    \end{itemize}
+
+  \item Final Report
+    \begin{itemize}
+      \item Chapter 4\\\textit{Marcin}
+      \item Chapter 5\\\textit{Vasileios}
+      \item Chapter 6\\\textit{Marcin}
+      \item Chapter 7\\\textit{Yiwei}
+      \item Chapter 8\\\textit{Vasileios}
+      \item Chapter 9\\\textit{Marcin, Vasileios, Linh, Yiwei}
+      \item Draft Review\\\textit{Marcin, Vasileios, Linh}
+    \end{itemize}
+\end{enumerate}
+
+
+\subsection{Timeline and Project Log}
+
+The timeline of the project is listed below.
+
+\begin{itemize}
+\item January 28 - team formed by Marcin and Vasileios
+\item February 9 - roles assigned for Marcin, Vasileios, and Linh (one member is missing)
+\item February 22 - first meeting with all members present (Yiwei joins the team)
+\item February 24 - Swift Fox white-paper was submitted 
+\item March 12 - grammar, tokens, and types are finished
+\item March 24 - Swift Fox tutorial and Swift Fox manual are submitted
+\item April 12 - presentation of a simple swift fox example; blink demo works
+\item April 25 - practice for the class presentation
+\item April 26 - project presentations in class
+\item May 6 - Swift Fox compiles more sophisticated programs than blink 
+\item May 9 - report and code are submitted
+\item May 10 - demo presentation
+\end{itemize}
+
+A more detailed, day-by-day timeline can be found at 
+\url{http://nslvm2.cs.columbia.edu/trac/timeline}
+The day-by-day timeline generated by Track shows every member contributions
+to the project, including coding and writing text. In the Trac we were also
+storing the meeting log. The meeting log showing all meetings with each
+meeting's agenda can be found at
+\url{http://nslvm2.cs.columbia.edu/trac/wiki/MeetingsLog}. Overall, our
+group had 20 meetings, out of which 7 meetings were in the presence of the 
+Prof. Alfred Aho. Marcin and Vasilis were present on all meetings, and Linh
+and Yiwei both missed 6 meetings. Finally, the Trac system was generating
+reports from all jobs done based on the assignment tickets assigned after each
+meeting. Detailed tickets assignment log can be found at
+\url{http://nslvm2.cs.columbia.edu/trac/report/6}.

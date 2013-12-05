@@ -1,0 +1,14 @@
+digraph finite_state_machine {
+	rankdir=LR;
+	size="8,5"
+	node [shape = doublecircle]; "sleep day";
+	node [shape = circle];
+	"sleep day" -> "sleep night" [ label = "night" ];
+	"sleep night" -> "sleep day" [ label = "day" ];
+	"sleep day" -> "cold temperature" [ label = "cold day" ];
+	"sleep night" -> "cold temperature" [ label = "cold night" ];
+	"cold temperature" -> "sleep day" [ label = "not cold day" ];
+	"cold temperature" -> "sleep day" [ label = "day" ];
+	"cold temperature" -> "sleep night" [ label = "not cold night" ];
+	"cold temperature" -> "sleep night" [ label = "night" ];
+}

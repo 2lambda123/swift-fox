@@ -1,0 +1,1 @@
+dot -Teps fsm.dot -o fsm.eps

@@ -1,0 +1,380 @@
+\section{Introduction}
+\label{sec:manual_introduction}
+
+This manual describes the first draft of Swift Fox language as specified by
+the authors on \today. In the following sections we define in detail the
+basic constructs used in Swift Fox. Special consideration have been given in
+making this manual reader-friendly and comprehensible, but at the same time
+formal enough so as to capture the the basic concepts that Swift Fox 
+employs.
+
+\
+
+\hangindent=4cm
+\hangafter=0
+\small
+\noindent
+Commentary material is indented and written in smaller type, similar to
+this excerpt.
+\normalsize
+
+\section{Lexical Conventions}
+\label{sec:lexical_conventions}
+
+In the Swift Fox language, a program consists of one or more
+\textit{translation units} stored into different files. The translation
+process consists of multiple phases, which are described in great detail in 
+\cite{marcin:tutorial}. In the following section, we present the primitive 
+constructs that are used throughout the first phase of the translation,
+namely the \textit{lexical analysis}. During that phase, the source code of
+a Swift Fox program is considered to be a stream of characters that is fed
+into the lexical analyzer (lexer). Subsequently, the lexer\footnote{Also
+known as \textit{scanner}.} groups sequences of characters together and
+identifies \textit{tokens}. Each token is a pair of a \texttt{name} and a
+\texttt{value}; the value corresponds to a particular \textit{lexeme} that 
+is identified by the regular expression for the corresponding token,
+whereas the name is merely an identifier for abstracting the set of lexemes
+(\textit{i.e.,} referring to the language of lexemes that are described by 
+the same regular expression) \cite{aho:2007}.
+
+\
+
+$\textit{token:} <\texttt{token\_name}, \texttt{token\_value}>$
+(\textit{e.g.,} $<\texttt{identifier}, \texttt{blink}>$)
+
+\
+
+\hangindent=4cm
+\hangafter=0
+\small
+\noindent
+Appendix \ref{sec:lex} includes the definition of a Swift Fox lexical
+analyzer for the \texttt{flex} lexer-generator \cite{lesk:1990,paxson:2010}.
+The reference implementation of the Swift Fox compiler uses the
+\texttt{flex} lexer-generator and the \texttt{YACC} parser-generator,
+\cite{johnson:1975,bison:2010}, however this manuscript provides
+(hopefully) all possible details for implementing a Swift Fox compiler in
+every available compiler-compiler tool.
+\normalsize
+
+\subsection{Tokens}
+
+\textit{Tokens} in Swift Fox, similarly to every other language, are
+composed by sequences of characters. The \textit{lexer} (\textit{i.e.,}
+lexical analyzer) produces four classes of tokens:
+\begin{itemize}
+	\item \texttt{identifiers}
+	\item \texttt{keywords}
+	\item \texttt{constants}
+	\item \texttt{operators}
+\end{itemize}
+
+Additionally, the \textit{whitespace} character class is used in order to
+separate the various tokens. The following characters are considered
+whitespace and along with comments are ignored throughout the rest phases
+of the translation.
+
+\begin{itemize}
+	\item \texttt{space}
+	\item \texttt{horizontal tab}
+	\item \texttt{vertical tab}
+	\item \texttt{form feed}
+	\item \texttt{carriage return}
+\end{itemize}
+
+Notice, however, that \texttt{newlines} are not considered whitespace and
+they have a special meaning in Swift Fox (see Section
+\ref{sec:separators}).
+
+\
+
+\hangindent=4cm
+\hangafter=0
+\small
+\noindent
+Swift Fox is currently under development. Therefore, there might be some
+inconsistency between the formal description of the tokens and the
+corresponding \texttt{Lex} definition in Appendix \ref{sec:lex}.
+\normalsize
+
+\subsection{Comments}
+
+\textit{Comments} are introduced by character \texttt{\#} and terminate
+with a newline. Everything between the comment character and the newline
+character is considered to be a comment, and therefore it is ignored.
+Comments must start on a new line, and can only be preceded by a delimiter,
+but not a line of a Swift Fox code.
+
+\subsection{Identifiers}
+
+\textit{Identifiers} in Swift Fox are sequences of letters, digits, and
+character ``\texttt{\_}''. They are used in order to \textit{name} specific
+instances of the primitive types that the language provides (see Section
+\ref{sec:types}) and, hence, they are considered to be variables.
+Identifiers can be of arbitrary length but not zero (\textit{i.e.,} there
+is no such thing as the ``empty'' identifier). Moreover, the first
+character of an identifier cannot be a number; it must be either a
+letter, or character ``\texttt{\_}''. Finally, identifiers are case
+sensitive and have a number of characters that are considered to be
+significant.
+
+\
+
+\hangindent=4cm
+\hangafter=0
+\small
+\noindent
+Notice that the number of significant characters in identifiers depends on 
+the compiler implementation. The reference implementation provided by the
+authors supports up to 127 significant characters.
+\normalsize
+
+\
+
+Identifiers in Swift Fox are only used for naming objects (\textit{e.g.,}
+applications, networks, sources, configurations, event-conditions) and
+referring to them. The binding between a name and the corresponding object
+is performed during the declaration of the identifier and remains the same 
+for the rest of the program. For example, Swift Fox does not allow a user 
+to change a configuration variable and assign a different configuration 
+to it. The \textit{scope} of all identifiers is, therefore, the same and
+it global (for a particular program). Similarly, the \textit{lifetime} of 
+all identifiers is the same and it is equal to the lifetime of the Swift 
+Fox program. 
+
+\
+
+\hangindent=4cm
+\hangafter=0
+\small
+\noindent
+Objects in Swift Fox are not created and disposed \textit{dynamically} (or
+\textit{automatically}) at runtime.
+\normalsize
+
+\subsection{Keywords}
+
+Swift Fox uses a set of special-meaning identifiers, namely
+\textit{keywords}, which cannot be used otherwise. Table
+\ref{tbl:keywords}, below, illustrates all the ``reserved'' words that are 
+used in Swift Fox.
+
+\begin{table}[!h]
+	\begin{center}
+	\begin{tabular}{| c | c | c |}
+	\hline
+	\texttt{use} & \texttt{application} & \texttt{network}	\\
+	\hline
+	\texttt{source} & \texttt{configuration} & 
+	\texttt{event-condition}					\\
+	\hline
+	\texttt{from} & \texttt{goto} & \texttt{when}			\\
+	\hline
+	\texttt{nothing} & \texttt{any} & \texttt{once}			\\
+	\hline
+	\texttt{and} & \texttt{or} & \texttt{not} 			\\
+	\hline
+	& \texttt{start} &	\\
+	\hline
+	\end{tabular}
+	\end{center}
+	\caption{Swift Fox keywords.}
+	\label{tbl:keywords}
+\end{table}
+
+\
+
+\hangindent=4cm
+\hangafter=0
+\small
+\noindent
+All keywords have special meaning for the Swift Fox translation procedure
+and therefore cannot be used as identifiers; one cannot name a
+configuration or an event-condition as ``network'', or ``goto''.
+\normalsize
+
+\subsection{Constants}
+
+Currently only four different kinds of \textit{constants} are supported.
+Temperature, time, integer constants, and string literals. Temperature and
+time constants are comprised of digit sequences that resemble a decimal
+value, followed by the corresponding suffix that denotes the scale. The
+allowed suffixes for temperature are ``\texttt{C}'' and ``\texttt{F}'' and
+they denote the Celsius and Fahrenheit scale respectively. Similarly, the
+time-allowed suffixes are ``\texttt{msec}'', ``\texttt{sec}'',
+``\texttt{min}'', ``\texttt{hr}''. On the other hand, integer constants are
+not allowed to have a suffix; they are merely comprised of digit sequences 
+that resemble a decimal value. Finally, Swift Fox also supports string
+literals, which are essentially sequences of characters.
+
+\
+
+\hangindent=4cm
+\hangafter=0
+\small
+\noindent
+Typically, string constants are used in order to denote path elements on
+the definition of applications, network protocols, and sources. They are
+semantically compatible with the definition of C strings.
+\normalsize
+
+
+\section{Syntax Notation}
+\label{sec:syntax_notation}
+
+In this section we define the syntactic constructs that are used in Swift
+Fox language. The \textit{syntactic analysis} is the bulk part of the
+second phase of the translation procedure \cite{aho:2007}. During that
+phase, a stream of tokens, which is provided by the lexer, is checked for
+adherence to Swift Fox rules. In other words, the source code is tested for
+conformity to the syntactic rules that are defined by the formal grammar of
+the language. The result of this procedure is an \textit{annotated parse 
+tree} of the program along with a special data structure that keeps
+information about each identifier (\textit{i.e.,} the \textit{symbol
+table}).
+
+\
+
+\hangindent=4cm
+\hangafter=0
+\small
+\noindent
+Appendix \ref{sec:yacc} includes the definition of a Swift Fox parser. The
+reference implementation of the Swift Fox compiler uses the YACC (Bison)
+parser-generator \cite{johnson:1975,bison:2010}. However, this manuscript
+provides all possible details for implementing a Swift Fox compiler with
+every available compiler-compiler.
+\normalsize
+
+\subsection{Types}
+\label{sec:types}
+
+Swift Fox is a \textit{strongly typed} language \cite{cardelli:1991} where
+type checking occurs only at compile time. The simplistic nature of Swift
+Fox syntax prevents type intermixing without loss of expressibility. The
+benefits of this approach are manifold. First, the language does not need
+to involve additional complexity with runtime checks. Notice that the
+execution environment of Swift Fox is severely constrained and any runtime 
+type check will not only impact the performance of the system, but also
+drain the available power supply \cite{marcin:whitepaper}. Second, it
+allows strong guarantees about the runtime behavior of the program since
+there are no explicit or implicit type conversions. Third, it guards
+against evasions of the type system that can lead to unpredictable
+behavior.
+
+Swift Fox is also a \textit{static typed} language. This allows the optimal
+selection of the storage needed for the various Swift Fox objects. This is,
+again, of paramount importance for the over constrained application domain
+of Swift Fox \cite{marcin:whitepaper}. The \textit{primitive} types that
+define the building blocks of the language are the following:
+
+\begin{itemize}
+	\item \texttt{application}. This primitive type is used in order to
+	define application components (\textit{e.g.,} Blink, Collector, or
+	Picture) as introduced in \cite{marcin:tutorial}
+	\item \texttt{network}. Similarly to the previous type, network
+	is used in order to define network components (\textit{e.g.,}
+	CTP or P2P-MultiHop)
+	\item \texttt{source}. Defines event sources (\textit{e.g.,}
+	temperature readings, timeouts)
+	\item \texttt{configuration}. Configuration defines a specific
+	binding among instances of the different classes of components
+	that are provided by Fennec Fox \cite{marcin:tutorial})
+	\item \texttt{event-condition}. Event-condition associates events
+	with specific conditions (\textit{e.g.,} temperature $>$ 90 F)
+\end{itemize}
+
+\
+
+\hangindent=4cm
+\hangafter=0
+\small
+\noindent
+Swift Fox does not have composite types nor does it allow the programmer to
+define and use its own types. Moreover, it provides a set of predefined
+values for application, network, and source that correspond to the basic
+applications, network protocols, and sensors that are always available to a
+system. This feature is essentially similar to the notion of C libraries
+that provide additional functionality in user programs when needed.
+\normalsize
+
+\subsection{Operators}
+
+The operators used in Swift Fox can be classified as \textit{relational},
+\textit{logical}, or \textit{enumerative}. Relational operators are used
+in order to define an event-condition and they evaluate to \texttt{true}
+or \texttt{false}. Infix operators \texttt{<} (less), \texttt{>} (greater),
+\texttt{<=} (less or equal), \texttt{>=} (greater or equal), and
+\texttt{=} (equal) yield 0, if the relation that corresponds to a specific
+condition is false, and 1 if it is true. The infix logical operators
+\texttt{and} and \texttt{or} are used in order to combine two or more
+event-conditions conjunctively or disjunctively, whereas the infix
+\textit{comma} (\texttt{,}) operator is used among two or more
+configurations in order to create a set from them. The \texttt{not} 
+operator works as negation operator and takes
+one argument of type \texttt{event}. The return value of the \texttt{not}
+operator is an event which becomes true when the argument event is false.
+The \texttt{and} operator takes two arguments of type \texttt{event} and
+returns an event which is true when both argument events are true. The
+\texttt{or} operator takes two arguments of type \texttt{event} and
+returns two events that are true if either one of the argument events is
+true. To improve readability, in every statement we allow to use maximum
+one \texttt{or} operator. The number of \texttt{not} and \texttt{and}
+operators is unlimited. Finally, the \texttt{not} operator has higher 
+precedence than the operator \texttt{and}, and operator \texttt{or} has 
+the lowest precedence. 
+
+\subsection{Separators}
+\label{sec:separators}
+
+\textit{Separators} are special characters that are used in Swift Fox in
+order to segregate various statements. Currently, Swift Fox uses only one
+separator: the \texttt{newline} (\texttt{LF}). Hence, library declaration
+statements, configuration and event-condition declaration statements, and
+policy and initial-configuration statements (Section \ref{sec:statements}
+and Appendix \ref{sec:yacc}) are separated from each other using newline
+characters.
+
+\subsection{Statements}
+\label{sec:statements}
+
+Swift Fox programs consist of sequences of \textit{statements}. There are
+three different types of \textit{statements}. The first type includes
+\textit{declaration statements} for applications, network protocols, and
+event sources, as well as configurations and event-conditions (see Section 
+\ref{sec:types}). The lines 154 -- 231 and 394 -- 453 in Appendix
+\ref{sec:yacc} illustrate the syntax for that particular type. The second
+type of statements is about \textit{policy definitions} (see lines 252 --
+380 in Appendix \ref{sec:yacc}). The bulk part of a Swift Fox program is
+typically made of such statements, since they capture the reconfiguration
+strategy of the system. Finally, the last type of statement (actually it
+is only one statement) is about declaring the initial configuration of the
+system; similar to the main entry point of a C program, there is an initial
+configuration for a Swift Fox policy.
+
+\
+
+\hangindent=4cm
+\hangafter=0
+\small
+\noindent
+Appendix \ref{sec:yacc} illustrates the syntax of the Swift Fox language
+through a YACC grammar-definition. Without loss of generality, this should
+give an indication of the syntactic rules of the language so as to
+implement those in other compiler-compilers.
+\normalsize
+
+\
+
+Notice that the order of the previous statements is important and fixed. A 
+valid Swift Fox program cannot intermix different types of statements and
+the first statements of a valid program should be application, network, or 
+source declarations followed by configuration declarations. The
+application, network, and source declarations are optional (\textit{i.e.,} 
+they can be omitted) and are typically provided in the form of
+a ``library''. Subsequently, there might be some event-condition
+declaration statements followed by policy statements. Again, the
+declaration of event-conditions and the definition of policies is not
+mandatory. The final statement is always the initial configuration
+statement and it is necessary in every valid Swift Fox program.
+

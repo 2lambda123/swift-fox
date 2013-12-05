@@ -1,0 +1,70 @@
+\documentclass[11pt]{report}
+
+\usepackage{authblk}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{color}
+
+\begin{document}
+
+\title{Swift Fox Programming Language\\ Final Report}
+\author{Marcin Szczodrak \footnote{msz@cs.columbia.edu}}
+\author{Vasileios P. Kemerlis \footnote{vpk@cs.columbia.edu}}
+\author{\\ Xuan Linh Vu \footnote{xv2103@columbia.edu}}
+\author{Yiwei Gu \footnote{yg2181@columbia.edu}}
+\affil{
+        Computer Science Department     \\
+        Columbia University             \\
+        New York, NY
+}
+\date{\today}
+\maketitle
+
+\tableofcontents
+
+\chapter{Introduction}
+\newpage
+\input{whitepaper}
+
+\chapter{Language Tutorial}
+\newpage
+\input{tutorial}
+
+\chapter{Language Reference Manual}
+\newpage
+\input{manual}
+
+%\chapter{Project Plan}
+%\newpage
+%\input{plan}
+
+\chapter{Language Evolution}
+\newpage
+\input{evolution}
+
+\chapter{Translator Architecture}
+\newpage
+\input{architecture}
+
+%\chapter{Development Environment}
+%\newpage
+%\input{development}
+
+%\chapter{Test Plan}
+%\newpage
+%\input{test}
+
+%\chapter{Conclusions}
+%\newpage
+%\input{conclusions}
+
+\chapter{Appendix}
+\newpage
+\input{appendix}
+
+\bibliographystyle{plain}	% uses "plain.bst"
+\bibliography{report}	% bib entries are in "report.bib"
+
+
+\end{document}

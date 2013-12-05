@@ -1,0 +1,113 @@
+\section{Language Evolution (\textit{Vasileios})}
+\label{sec:language_evolution}
+
+Swift Fox, like most programming languages, was created from the necessity
+to meet a particular need. However, identifying a problem, suggesting a
+prominent solution, and finally implementing the prescribed logic is not
+always a straightforward procedure. Oftentimes, various parameters affect
+not only the design and the characteristics of the final outcome, but also
+result in the reconsideration of the original proposal. In this section, we
+shall see how we managed to maintain compatibility with our original
+plan, as our language was evolved and expanded throughout its development,
+and how we kept track of that process.
+
+\subsection{Evolution Throughout Development}
+
+The design of a programming language pretty much touches upon computer
+architecture, algorithms, language theory, and software engineering. Since
+Swift Fox is a special-purpose language, it also incorporates a considerable
+amount of OS-based concepts, networking and communications issues, as well
+as low-level characteristics regarding sensors (\textit{e.g.,} dealing
+with sensor readings). Such parameters not only had a major impact on the
+design of Swift Fox, but oftentimes they shaped completely the systemic
+approach that was followed on our implementation.
+
+\textit{Simplicity} has been a first class citizen in Swift Fox and one of
+the most pervasive characteristics of the language. After all, one of the
+goals of our language was to be used by non-expert users of the field for
+allowing them to concentrate on a particular problem and ``avoid
+plumbing'' (\textit{e.g.,} dealing with platform peculiarities, low-level
+details, and various system, but problem-irrelevant, issues). Thus, the
+basic constructs of the language (\textit{i.e.,} configurations,
+event-conditions, and policies) were defined in a rudimentary manner just
+for enabling our language to capture the essence of the corresponding
+concepts from the sensor domain (see Section
+\ref{sec:manual_introduction}). As a result, they did not evolve
+considerably throughout the development of the language. The only
+considerations were regarding the readability of the language and the
+structure of the analogous statements. A typical example of such a dispute
+was whether the definition of a new \texttt{configuration} type (see
+Section \ref{sec:types}) should include a comma between the application and
+the network components, or not. Another example of that nature was the
+selection of various suffixes in the constant definitions (\textit{e.g.,}
+\texttt{msec}, \texttt{min}, \texttt{hr}). In any such case, the underlying
+structure of our translator was not affected significantly. That is, we
+isolated the corresponding changes on the lexical/syntax analysis part and 
+in particular on the definitions of the related constructs.
+
+The most important changes on the specification of the language were
+imposed by the run-time environment and the underlying platform that
+Swift Fox utilizes, namely Fennec Fox. Fennec Fox evolved and extended
+along with Swift Fox. Therefore, oftentimes we found necessary to redefine
+various aspects of the original proposal due to the nature and the
+properties of Fennec Fox. Briefly speaking, the deviations of our language
+from the original specifications were mostly due to the limitations, or
+specific idiosyncrasies, of the target platform. In particular, we
+re-established the definitions of \texttt{application}, \texttt{network},
+and \texttt{source} types since the concurrent development of Fennex Fox
+regularly affected the instantiation of those types (\textit{i.e.,} how
+we can refer to an application, or a particular network protocol).
+
+Overall, we tried to stay in line with the original proposal as much as
+possible. Surprisingly, the complexity of a programming language design
+made this task non-trivial even for a language like Swift Fox with a tiny
+set of basic types and allowable constructs. In order to maintain the
+attributes of the original proposal, we followed two approaches:
+\textit{i.} simplicity on the language definition, and \textit{ii.} layered
+design. As far as the former is concerned, we made the language types and
+constructs relatively simple and manageable. This reduced the degrees of
+freedom regarding their specification and kept the complexity of having 
+them in agreement with the original specification relatively low. The
+latter approach enabled us to isolate changes and make local extensions.
+All the adjustments that we made were in most cases handled transparently
+from the irrelevant parts of the translator.
+
+\subsection{Consistency}
+
+The Swift Fox translator was under constant development throughout the
+duration of this project. Therefore, keeping the team up-to-date with the
+changes during the whole implementation phase was of paramount importance
+for various reasons:
+\begin{itemize}
+	\item maintaining the \textit{logical consistency} and
+	\textit{semantical correctness} of the translator
+	\item since more than one person might have been working
+	concurrently on implementing the various features of the compiler,
+	we had to ensure that all developers were aware of the latest
+	development status for not implementing the same parts, or even
+	worse, the same parts in a different manner
+	\item tracking the progress of the implemented features, the
+	individuals contributions, and most importantly keeping the the
+	roles of the team separated and clear
+\end{itemize}
+
+In order to achieve this, we relied upon our web-based project management
+and bug-tracking tools, namely Subversion \cite{svn} and Trac \cite{trac}.
+
+We adopted a distributed development model with a centralized source code
+repository hosted here at Columbia University (courtesy of the Network
+Security Laboratory (NSL) \cite{nsl}). In particular, we merged the code
+repository with the management system in order to keep track of the
+development process and deal with the changes in the code in a
+\textit{differential} manner through the web. Hence, all the members were
+informed about the progress on the implementation and the latest changes
+by visiting the appropriate URL on the project web site
+(\textit{i.e.,} \url{http://nslvm2.cs.columbia.edu/trac/timeline}).
+Moreover, by exploiting the reporting and ``ticketing'' capabilities of
+Trac, the team could easily observe the status of the various milestones,
+bugs, and features. Finally, on the long run our group also held weekly
+meetings (see Section \ref{sec:project_plan}). Among others, we were also
+discussing the latest features that have been added to the translator, the
+current status on the implementation, and most importantly various
+deviations from the prescribed implementation plan. For the needs of
+Swift Fox project, it turned out that our approach was more than sufficient.

@@ -1,0 +1,92 @@
+\section{Test Plan (\textit{Vasileios})}
+
+\textit{Software testing} has always been an integral part of the software
+development process. Historically, its focus was limited to ``bug
+hunting''. However, in nowadays its scope had been significantly broadened
+ranging from uncovering software defects, to estimating the overall quality
+of a particular implementation (or design). In this section, we shall see
+the testing plan that was followed throughout the implementation of the
+Swift Fox translator.
+
+\subsection{Overview}
+
+We have already mentioned many times (in the previous sections) that
+building a translator is a complicated and difficult task even at the
+conceptual level. Therefore, the testing plan was of significant importance
+to the whole development of Swift Fox in order to guarantee the
+functionality of the translator and ensure its expedient delivery.
+
+Since the amount of time available for the implementation of Swift Fox was
+limited, we opted for a particular testing plan consisting of rigorous
+tests that guarantee the minimum expected behavior. We focused solely on
+the \textit{functional} requirements of the translator, leaving
+non-functional attributes like \textit{testability}, \textit{scalability}, 
+\textit{usability}, and \textit{manageability} for future consideration.
+In particular, we adopted a ``demonstration-based'' testing plan, where
+various combinations of \textit{unit}, \textit{integration}, and
+\textit{regression} testing were used in order to guarantee that the
+translator could succeed in demonstrating its usage. The implementation of 
+Swift Fox heavily relies upon ``compiler-generation'' tools (\textit{e.g.,}
+YACC, Lex). We assert the correctness of the generators' output and we
+concentrate solely on our definitions, constructs, and semantic
+annotations. We divided the translator into the following entities:
+\begin{itemize}
+	\item lexer. This entity performs the lexical analysis by grouping
+	together characters from the source program for constructing tokens
+	(see Section \ref{sec:lexical_conventions})
+	\item parser. Although it should be obvious by now, the parser
+	takes the tokens returned from the lexical analysis part and
+	imposes a hierarchical structure on them (see Section
+	\ref{sec:syntax_notation})
+	\item semantic analyzer. The final component of the overall
+	``analysis'' part of the translator; it makes sure that our
+	programs are semantically \textit{sound} and correct
+	\item code generator. Component of the ``synthesis'' part of the
+	translator. It generates the target program given the intermediate
+	representation (\textit{i.e.,} annotated parse tree in the
+	case of Swift Fox) produced by the final phase of the analysis part
+	and the information stored on the symbol table
+\end{itemize}
+
+In the following section we illustrate how each of the adopted testing
+techniques was applied on the aforementioned entities.
+
+\subsection{Test strategy}
+
+We used various combinations of \textit{unit}, \textit{integration}, and
+\textit{regression} testing for assessing the quality and expected behavior
+of the Swift Fox translator. In particular, the lexer was evaluated using a
+mixture of unit and regression testing. That is, we isolate the output
+returned from the lexer in terms of tokens, and for various scenarios we
+compare them with the expected output. The process is completely automated 
+and consists of a test ``driver'' that takes the translator and invokes its
+lexer using as input various sample programs. The expected output for each 
+program needs to be manually constructed and stored on the testing pool.
+The comparisons and possible deviations from the expected behavior are
+automatically identified and reported. Notice that for the lexer part, most
+tests consist of \textit{positive} examples. In other words, we need to
+make sure that the correct tokens are returned by the lexer in each case.
+
+Next, we use a combination of unit, integration, and regression tests in
+order to make sure that the parser operates as expected. Similarly to the
+previous case, we have implemented a test driver that invokes the
+lexer/parser pair with a set of predefined programs in order to validate
+the expected behavior of the parser. However, in that case the tests
+consist of \textit{negative} examples. That is, we seek to estimate whether
+the parser can identify syntactical errors on the source programs and
+report them correctly. The semantic analyzer is tested similarly to the
+parser, but with the corresponding driver and test cases.
+
+Finally, we combine all our testing options for the final entity of our
+translator, namely the code generator. In that case we investigate whether
+the final target programs returned from the translator match the expected
+onces. Similarly to the lexer testing, this part uses a regression testing
+suite with positive examples. By making sure that the code generator part,
+generates correct target programs, we also make guarantee that the output
+of the previous entities (\textit{i.e.,} parser, semantic analyzer) is
+identified and passed correctly to the generator.
+
+The code listing in Appendix \ref{sec:lex_testing_suite} illustrates an
+example of our testing suite, and in particular the unit/regression
+implementation of the lexer. The complete listing of the testing suite code
+can be found at the Appendix. 
