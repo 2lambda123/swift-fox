@@ -102,7 +102,7 @@ struct symtab {
 } symtab[NSYMS];
 
 struct symtab *symlook(char *);
-struct symtab *find_sym(char *);
+struct symtab *find_module_symtab(char *);
 
 struct defvalue {
 	double			def_value;

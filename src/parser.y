@@ -972,14 +972,14 @@ symlook(char *s) {
 
 /* symbol */
 struct symtab *
-find_sym(char *s) {
+find_module_symtab(char *s) {
         /* iterator */
         struct symtab *sp = NULL;
 
         /* loop */
         for(sp = symtab; sp < &symtab[NSYMS]; sp++) {
                 /* is it already here? */
-                if (sp->name && !strcmp(sp->name, s))
+		if (sp->name && !strcmp(sp->name, s) && (sp->lib != NULL))
                         return sp;
 
         }
@@ -992,7 +992,7 @@ proc_module(char *s) {
 	char * c;
 
 	/* symtab ptr */
-	struct symtab *sp = find_sym(s);
+	struct symtab *sp = find_module_symtab(s);
 
         /* iterator */
         struct modtab *mp = NULL;
