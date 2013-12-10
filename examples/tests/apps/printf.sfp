@@ -1,0 +1,5 @@
+configuration hello { printf() nullNet() nullMac() nullRadio() }
+
+state test { hello }
+
+start test

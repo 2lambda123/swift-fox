@@ -1,0 +1,10 @@
+configuration empty_stack { nullApp()
+                        nullNet()
+			nullMac()
+			nullRadio()
+}
+
+state one_state { empty_stack }
+
+start one_state
+

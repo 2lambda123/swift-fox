@@ -1,0 +1,5 @@
+configuration hello { bridge() nullNet() nullMac() nullRadio() }
+
+state test { hello }
+
+start test

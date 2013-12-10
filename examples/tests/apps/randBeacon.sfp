@@ -1,0 +1,5 @@
+configuration hello { randBeacon(1, 1024) nullNet() nullMac() nullRadio() }
+
+state test { hello }
+
+start test
