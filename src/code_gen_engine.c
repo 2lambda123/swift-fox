@@ -295,7 +295,7 @@ void generateFennecEngineP() {
     		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && ((mp->lib->type == TYPE_APPLICATION) || (mp->lib->type == TYPE_EVENT))) {
       			fprintf(fp, "/* Application  Module: %s */\n",
 						mp->lib->full_name);
-      			fprintf(fp, "uses interface Mgmt as %sControl;\n", 
+      			fprintf(fp, "uses interface SplitControl as %sControl;\n", 
 						mp->lib->full_name);
       			fprintf(fp, "provides interface %sParams;\n", 
 						mp->lib->full_name);
@@ -324,7 +324,7 @@ void generateFennecEngineP() {
 	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
 		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
 			fprintf(fp, "/* Network Module: %s */\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Mgmt as %sControl;\n", mp->lib->full_name);
+			fprintf(fp, "uses interface SplitControl as %sControl;\n", mp->lib->full_name);
       			fprintf(fp, "provides interface %sParams;\n", 
 						mp->lib->full_name);
 
@@ -350,7 +350,7 @@ void generateFennecEngineP() {
 	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
 		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
 			fprintf(fp, "/* MAC Module: %s */\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Mgmt as %sControl;\n", mp->lib->full_name);
+			fprintf(fp, "uses interface SplitControl as %sControl;\n", mp->lib->full_name);
 
       			fprintf(fp, "provides interface %sParams;\n", 
 						mp->lib->full_name);
@@ -383,7 +383,7 @@ void generateFennecEngineP() {
 	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
 		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
 			fprintf(fp, "/* Radio Module: %s */\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Mgmt as %sControl;\n", mp->lib->full_name);
+			fprintf(fp, "uses interface SplitControl as %sControl;\n", mp->lib->full_name);
 
       			fprintf(fp, "provides interface %sParams;\n", 
 						mp->lib->full_name);

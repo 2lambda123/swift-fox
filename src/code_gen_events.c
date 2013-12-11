@@ -45,7 +45,7 @@ void generateEventP(int event_counter) {
 
 	fprintf(fp, "\n#include <Fennec.h>\n\n");
 	fprintf(fp, "module EventsP {\n\n");
-	fprintf(fp, "  provides interface Mgmt;\n");
+	fprintf(fp, "  provides interface SplitControl;\n");
 	fprintf(fp, "  uses interface EventCache;\n");
 
 	for(sp = symtab; sp < &symtab[NSYMS]; sp++) {
@@ -59,16 +59,16 @@ void generateEventP(int event_counter) {
 	fprintf(fp, "implementation {\n\n");
 	fprintf(fp, "  void turnEvents(bool flag);\n");
 	fprintf(fp, "  void setEvent(uint8_t ev_num, bool flag);\n\n");
-	fprintf(fp, "  command error_t Mgmt.start() {\n");
+	fprintf(fp, "  command error_t SplitControl.start() {\n");
 	fprintf(fp, "    turnEvents(ON);\n");
 	fprintf(fp, "    dbg(\"Events\", \"Events started\\n\");\n");
-	fprintf(fp, "    signal Mgmt.startDone(SUCCESS);\n");
+	fprintf(fp, "    signal SplitControl.startDone(SUCCESS);\n");
 	fprintf(fp, "    return SUCCESS;\n");
 	fprintf(fp, "  }\n\n");
-	fprintf(fp, "  command error_t Mgmt.stop() {\n");
+	fprintf(fp, "  command error_t SplitControl.stop() {\n");
 	fprintf(fp, "    turnEvents(OFF);\n");
 	fprintf(fp, "    dbg(\"Events\", \"Events stopped\\n\");\n");
-	fprintf(fp, "    signal Mgmt.stopDone(SUCCESS);\n");
+	fprintf(fp, "    signal SplitControl.stopDone(SUCCESS);\n");
 	fprintf(fp, "    return SUCCESS;\n");
 	fprintf(fp, "  }\n\n");
 	fprintf(fp, "  void setEvent(uint8_t ev_num, bool flag) {\n\n");
