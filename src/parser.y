@@ -28,8 +28,6 @@
 #include "traverse.h"
 
 void initialize(void);
-void gc(void);
-void checkForRemotePath(struct libtab*);
 
 int policy_counter	= 0;
 FILE *fcode		= NULL;
@@ -840,9 +838,6 @@ start_parser(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	/* cleanup */	
-	(void)atexit(gc);
-
 	initialize();
 	
 	/* process libraries */
@@ -893,6 +888,7 @@ yyerror(char *errmsg) {
 int
 yywrap(void) {
 	struct stat st;
+
 	/* finish; done with library and program */
 	switch(file_status) {
 		case 1:
@@ -1085,7 +1081,6 @@ liblook(char *l) {
                 /* is it free */
                 if(!lp->path) {
                         lp->path = strdup(l);
-			checkForRemotePath(lp);
 			lp->used = 0;
                         return lp;
                 }
@@ -1174,47 +1169,4 @@ void printTable() {
         }
 } 
 
-/* garbage collection */
-void
-gc(void) {
-	
-	/* cleanup */
-	(void)fclose(yyin);
-}
-
-/* check if the path is remote */
-void
-checkForRemotePath(struct libtab *lp) {
-
-        /* check if it is http:// */
-        if (!strncmp(lp->path, "http://",7)) {
-
-                /* make temp dir for all downloaded libraries */
-                mkdir(TEMP_DIR, S_IRWXU);
-
-                char *p = NULL;
-                /* extract the name from the path */
-                if ((p = rindex(lp->path, '/')) != NULL) {
-                        p++;
-                }
-
-                /* make dir for this library */
-                char *new = malloc(strlen(p)+strlen(TEMP_DIR)+2);
-                sprintf(new, "%s/%s", TEMP_DIR, p);
-                mkdir(new, S_IRWXU);
-
-                /* prepare system command */
-                char *command = malloc(strlen(lp->path)+strlen(new)+40);
-                sprintf(command, "wget -q -nd -r --no-parent -A.nc -P %s %s", new, lp->path);
-
-                if( system(command) ) {
-                        fprintf(stderr, "Swift Fox Error: Could not download files from %s\n", lp->path);
-                        exit(1);
-                }
-                free(lp->path);
-                lp->path = strdup(new);
-                free(command);
-                free(new);
-        }
-}
 
