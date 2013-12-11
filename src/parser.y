@@ -973,14 +973,19 @@ symlook(char *s) {
 /* symbol */
 struct symtab *
 find_module_symtab(char *s) {
+	struct stat st;
         /* iterator */
         struct symtab *sp = NULL;
 
         /* loop */
         for(sp = symtab; sp < &symtab[NSYMS]; sp++) {
                 /* is it already here? */
-		if (sp->name && !strcmp(sp->name, s) && (sp->lib != NULL))
+		if (sp->name && !strcmp(sp->name, s) && (sp->lib != NULL)) {
+			if (stat(sp->lib->path, &st) != 0) {
+				yyerror("module path does not exists");
+			}
                         return sp;
+		}
 
         }
 	return NULL;
@@ -998,8 +1003,9 @@ proc_module(char *s) {
         struct modtab *mp = NULL;
 
 	/* check if this is a know module */
-	if (sp == NULL)
+	if (sp == NULL) {
 		yyerror("no such module");
+	}
 
         /* loop */
         for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
