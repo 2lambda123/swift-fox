@@ -891,19 +891,28 @@ yyerror(char *errmsg) {
 /* restart the parser with the program file */
 int
 yywrap(void) {
+	struct stat st;
 	/* finish; done with library and program */
 	switch(file_status) {
 		case 1:
-	        	/* open the specific library file */
-		        yyin 		= fopen(library_file, "r");
-			strcpy(error_location, "library");
+			/* re-init */
+			lineno		= 1;
+			tokenpos	= 0;
 			file_status 	= 2;
 			file_name 	= library_file;
 
-			if (yyin) {
-				/* re-init */
-				lineno		= 1;
-				tokenpos	= 0;
+	        	/* open the specific library file */
+			if (stat(library_file, &st) == 0) {
+		        	yyin 		= fopen(library_file, "r");
+				strcpy(error_location, "library");	
+
+				if (!yyin) {
+					/* failed */
+					(void)fprintf(stderr, 
+						"%s: no such file or directory\n",
+						library_file);
+		                	exit(1);
+				}
 				break;
 			}
 
@@ -911,12 +920,12 @@ yywrap(void) {
 			/* re-init */
 			lineno		= 1;
 			tokenpos	= 0;
+			file_status 	= 3;
+			file_name 	= program_file;
 
 			/* open the program file */
 		       	yyin		= fopen(program_file, "r");
 			strcpy(error_location, "program");
-			file_status 	= 3;
-			file_name 	= program_file;
         		if (!yyin) {
 				/* failed */
 				(void)fprintf(stderr, 
@@ -973,7 +982,6 @@ symlook(char *s) {
 /* symbol */
 struct symtab *
 find_module_symtab(char *s) {
-	struct stat st;
         /* iterator */
         struct symtab *sp = NULL;
 
@@ -981,7 +989,7 @@ find_module_symtab(char *s) {
         for(sp = symtab; sp < &symtab[NSYMS]; sp++) {
                 /* is it already here? */
 		if (sp->name && !strcmp(sp->name, s) && (sp->lib != NULL)) {
-			if (stat(sp->lib->path, &st) != 0) {
+			if (check_path(sp->lib->path)) {
 				yyerror("module path does not exists");
 			}
                         return sp;

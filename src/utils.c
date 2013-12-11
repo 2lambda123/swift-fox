@@ -128,3 +128,22 @@ int get_policy_mask(struct policy *p) {
 	}
 	return mask;
 }
+
+
+int check_path(char *path) {
+	struct stat st;
+	char temp_path[PATH_SZ];
+
+	(void)memset(temp_path, 0, PATH_SZ);
+
+	if (path[0] == '$') {
+		(void)sprintf(temp_path, "%s%s", getenv("FENNEC_FOX_LIB"),
+			path + strlen("$(FENNEC_FOX_LIB)"));
+		path = temp_path;
+	}
+
+	if (stat(path, &st) != 0) {
+		return 1;
+	}
+	return 0;
+}
