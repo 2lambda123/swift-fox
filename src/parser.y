@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <ctype.h>
 #include "sf.h"
+#include "utils.h"
 #include "traverse.h"
 
 void initialize(void);
