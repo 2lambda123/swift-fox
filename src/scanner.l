@@ -40,7 +40,7 @@ tab		\t+
 whitespace	{delim}+
 letter		[A-Za-z]
 digit		[0-9]
-number		[1-9]{digit}*
+number		(-)*[1-9]{digit}*
 newline		\n.*
 identifier	({letter}|_)({letter}|{digit}|_)*
 hex		0x([A-Fa-f]|{digit})+
@@ -257,6 +257,28 @@ double		{
 			yylval.ival = TYPE_DOUBLE;
 #endif
 			return VARIABLE_TYPE;		}
+
+
+int8_t         {
+#ifndef __DEBUG__
+			tokenpos += yyleng;
+			yylval.ival = TYPE_INT8_T;
+#endif
+			return VARIABLE_TYPE;           }
+
+int16_t        {
+#ifndef __DEBUG__
+			tokenpos += yyleng;
+			yylval.ival = TYPE_INT16_T;
+#endif
+			return VARIABLE_TYPE;           }
+int32_t	{
+#ifndef __DEBUG__
+			tokenpos += yyleng;
+			yylval.ival = TYPE_INT32_T;
+#endif
+			return VARIABLE_TYPE;		}
+
 
 
 {identifier}	{

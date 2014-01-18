@@ -54,6 +54,9 @@
 #define TYPE_UINT32_T		22
 #define TYPE_FLOAT		23
 #define TYPE_DOUBLE		24
+#define TYPE_INT8_T		25
+#define TYPE_INT16_T		26
+#define TYPE_INT32_T		27
 
 #define PATH_SZ			256
 #define ARGC_MAX		2

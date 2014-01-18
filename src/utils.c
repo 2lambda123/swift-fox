@@ -44,6 +44,15 @@ char * type_name(int type_value) {
 	case TYPE_UINT32_T:
 		return "uint32_t";
 
+	case TYPE_INT8_T:
+		return "int8_t";
+
+	case TYPE_INT16_T:
+		return "int16_t";
+
+	case TYPE_INT32_T:
+		return "int32_t";
+
 	case TYPE_FLOAT:
 		return "float";
 

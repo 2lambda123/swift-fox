@@ -1,1 +1,8 @@
 *.o
+.deps
+Makefile
+fennec
+parser.c
+parser.h
+scanner.c
+sfc
