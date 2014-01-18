@@ -28,4 +28,7 @@ int create_dir(char *ffsrc_relative);
 int get_policy_mask(struct policy *p);
 int check_path(char *path);
 
+char *str_toupper(char *s);
+char *conf_module_name(char *conf, char *module);
+
 #endif

@@ -1,0 +1,26 @@
+configuration control { ControlUnit()
+			cuNet()
+			cuMac()
+                        cc2420(26, 31, 1, 1)
+}
+			
+configuration red { blink(1, 1024)
+			nullNet() 
+			nullMac()
+			nullRadio()
+}
+
+configuration yellow { blink(2, 1024)
+			nullNet() 
+			nullMac()
+			nullRadio()
+}
+
+event-condition t1 {timer = 6 TYPE_SECOND @ 2}
+event-condition t2 {timer = 7 TYPE_SECOND @ 2}
+
+from red goto yellow when t1
+from yellow goto red when t2
+
+start red
+

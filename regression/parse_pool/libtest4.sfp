@@ -1,4 +1,0 @@
-# Testing erroneous library definition (missing () for parameters to modules)
-configuration empty { nullApp() nullNet() nullMac() nullRadio()  }
-start empty
-

@@ -70,6 +70,12 @@
 
 #define STD_FENNEC_FOX_LIB	"support/sfc/fennec.sfl"
 
+#define F_APPLICATION		1
+#define F_NETWORK		2
+#define F_MAC			3
+#define F_RADIO			4
+#define F_LAYERS		4
+
 
 #define UNKNOWN			-1
 
@@ -126,7 +132,6 @@ struct libtab {
         char			*path;
 	char			*def;
 	char			*name;
-	char			*full_name;
 	struct paramtype	*params;
 	int			used;
 	int			type;
@@ -146,7 +151,6 @@ struct evtab {
 struct evtab *evlook(char *);
 
 struct modtab {
-        int            		 id;
 	char			*name;
         int            		type;
         struct libtab   	*lib;
@@ -158,6 +162,7 @@ struct modtab *proc_module(char *);
 struct confnode {
 	struct confnodes	*parent;
 	struct symtab		*id;
+	char			*name;
 	struct modtab		*app;
 	struct modtab		*net;
 	struct modtab		*mac;
@@ -166,6 +171,14 @@ struct confnode {
 	struct paramvalue	*net_params;
 	struct paramvalue	*mac_params;
 	struct paramvalue	*radio_params;
+	char			*app_id_name;
+	int			app_id_value;
+	char			*net_id_name;
+	int			net_id_value;
+	char			*mac_id_name;
+	int			mac_id_value;
+	char			*radio_id_name;
+	int			radio_id_value;
 	int			counter;
 	int 			level;
 };

@@ -1,8 +1,10 @@
 2012-12-01 Marcin Szczodrak <marcin@ieee.org>
 
-0.79 release.
+0.79.1 release.
 
 Important new features:
     * Add default values for parameters of each module library definition
     * Check for default values when user does not declare own
     * 'config' state can be redefined	
+
+

@@ -1,3 +1,0 @@
-# Testing erroneous semantic definition (undeclared radio)
-configuration hello { test_blink() nullNet() nullMac() undeclared_radio() }
-start hello

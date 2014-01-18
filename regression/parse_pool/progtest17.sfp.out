@@ -1,5 +1,0 @@
-
-sfc in program parse_pool/progtest17.sfp
-syntax error at line 2, position 61:
-configuration foo { nullApp() nullNet() nullMac() nullRadio }
-                                                            ^

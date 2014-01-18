@@ -1,5 +1,0 @@
-
-sfc in library parse_pool/libtest3.sfl
-syntax error at line 2, position 17:
-use application use $(FENNEC_FOX_LIB)/Application/SimpleBlink
-                ^

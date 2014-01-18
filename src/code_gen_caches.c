@@ -61,18 +61,50 @@ void generateCaches(int event_counter, int policy_counter) {
 	fprintf(fp, "#include \"ff_defaults.h\"\n\n");
 
         for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-                if (mp->lib != NULL && mp->lib->path && mp->id > 0) {
+                if (mp->lib != NULL && mp->lib->path && mp->lib->used) {
                         fprintf(fp, "#include \"%sParams.h\"\n",
-                                                mp->lib->full_name);
+                                                mp->lib->name);
                 }
         }
         fprintf(fp, "\n");
 
-        for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-                if (mp->lib != NULL && mp->lib->path && mp->id > 0) {
-			fprintf(fp, "/* %s - %s */\n", mp->lib->full_name, mp->lib->path);
-                        fprintf(fp, "#define %s\t%d\n", mp->name, mp->id);
-                }
+	for( i = 0; i < conf_id_counter; i++ ) {
+		fprintf(fp, "/* %s for process %s\n"
+				"Computation module located at %s */\n\n",
+			conftab[i].conf->app->lib->name,
+			conftab[i].conf->id->name,
+			conftab[i].conf->app->lib->path);
+		fprintf(fp, "#define %s\t%d\n\n",
+			conftab[i].conf->app_id_name,
+			conftab[i].conf->app_id_value);
+
+		fprintf(fp, "/* %s for process %s\n"
+				"Network module located at %s */\n",
+			conftab[i].conf->net->lib->name,
+			conftab[i].conf->id->name,
+			conftab[i].conf->net->lib->path);
+		fprintf(fp, "#define %s\t%d\n\n",
+			conftab[i].conf->net_id_name,
+			conftab[i].conf->net_id_value);
+
+		fprintf(fp, "/* %s for process %s\n"
+				"MAC module located at %s */\n",
+			conftab[i].conf->mac->lib->name,
+			conftab[i].conf->id->name,
+			conftab[i].conf->mac->lib->path);
+		fprintf(fp, "#define %s\t%d\n\n",
+			conftab[i].conf->mac_id_name,
+			conftab[i].conf->mac_id_value);
+
+		fprintf(fp, "/* %s for process %s\n"
+				"Radio module located at %s */\n",
+			conftab[i].conf->radio->lib->name,
+			conftab[i].conf->id->name,
+			conftab[i].conf->radio->lib->path);
+		fprintf(fp, "#define %s\t%d\n\n",
+			conftab[i].conf->radio_id_name,
+			conftab[i].conf->radio_id_value);
+
         }
         fprintf(fp, "\n");
 
@@ -90,10 +122,10 @@ void generateCaches(int event_counter, int policy_counter) {
 		fprintf(fp, "\t{\n");
    		fprintf(fp, "\t\t/* %s */\n", conftab[i].conf->id->name); 
 		fprintf(fp, "\t\t.conf_id = %d,\n", conftab[i].conf->counter);
-		fprintf(fp, "\t\t.application = %s,\n", conftab[i].conf->app->name);
-		fprintf(fp, "\t\t.network = %s,\n", conftab[i].conf->net->name);
-		fprintf(fp, "\t\t.mac = %s,\n", conftab[i].conf->mac->name);
-		fprintf(fp, "\t\t.radio = %s,\n", conftab[i].conf->radio->name);
+		fprintf(fp, "\t\t.application = %s,\n", conftab[i].conf->app_id_name);
+		fprintf(fp, "\t\t.network = %s,\n", conftab[i].conf->net_id_name);
+		fprintf(fp, "\t\t.mac = %s,\n", conftab[i].conf->mac_id_name);
+		fprintf(fp, "\t\t.radio = %s,\n", conftab[i].conf->radio_id_name);
 		if (conftab[i].conf->level == UNKNOWN) {
 			fprintf(fp, "\t\t.level = F_MINIMUM_STATE_LEVEL\n");
 		} else {
@@ -110,9 +142,6 @@ void generateCaches(int event_counter, int policy_counter) {
 
 	/* Generate States */
 
-	//int confs_per_state = 0;
-
-
 	for( i = 0; i < state_id_counter; i++ ) {
 		fprintf(fp, "conf_t %s_confs[%d] = {", statetab[i].state->id->name, statetab[i].state->confs_counter);
 		conf_ptr = statetab[i].state->confs;
@@ -127,28 +156,7 @@ void generateCaches(int event_counter, int policy_counter) {
 			}
 		}
 		fprintf(fp, "};\n\n");
-
-   		fprintf(fp, "/* %s */\n", statetab[i].state->id->name); 
-		fprintf(fp, "struct stack_params %s_params[%d] = {\n", statetab[i].state->id->name, statetab[i].state->confs_counter);
-		conf_ptr = statetab[i].state->confs;
-		while (conf_ptr) { 
-			if (conf_ptr->conf) {
-				fprintf(fp, "\t{\n");
-				fprintf(fp, "\t\t&%s_%s_ptr,\n", conf_ptr->conf->conf->id->name, conf_ptr->conf->conf->app->lib->full_name);
-				fprintf(fp, "\t\t&%s_%s_ptr,\n", conf_ptr->conf->conf->id->name, conf_ptr->conf->conf->net->lib->full_name);
-				fprintf(fp, "\t\t&%s_%s_ptr,\n", conf_ptr->conf->conf->id->name, conf_ptr->conf->conf->mac->lib->full_name);
-				fprintf(fp, "\t\t&%s_%s_ptr\n", conf_ptr->conf->conf->id->name, conf_ptr->conf->conf->radio->lib->full_name);
-				fprintf(fp, "\t}\n");
-			}
-			conf_ptr = conf_ptr->confs;
-			if (conf_ptr != NULL) {
-				fprintf(fp, ", ");
-
-			}
-		}
-		fprintf(fp, "};\n\n");
 	}
-
 
 
 	fprintf(fp, "struct state states[NUMBER_OF_STATES] = {\n");
@@ -157,9 +165,7 @@ void generateCaches(int event_counter, int policy_counter) {
    		fprintf(fp, "\t\t/* %s */\n", statetab[i].state->id->name); 
                 fprintf(fp, "\t\t.state_id = %d,\n", statetab[i].state->counter);
                 fprintf(fp, "\t\t.num_confs = %d,\n", statetab[i].state->confs_counter);
-		fprintf(fp, "\t\t.conf_list = %s_confs,\n", statetab[i].state->id->name);
-		fprintf(fp, "\t\t.conf_params = %s_params\n", statetab[i].state->id->name);
-		
+		fprintf(fp, "\t\t.conf_list = %s_confs\n", statetab[i].state->id->name);
 
 		fprintf(fp, "\t}\n");
 		if (i+1 < state_id_counter) {
@@ -177,38 +183,12 @@ void generateCaches(int event_counter, int policy_counter) {
 		if (conftab[i].conf->id->type == TYPE_PROCESS_EVENT) {
 			fprintf(fp, "\t{%d, %d, %d},\n",
 					conftab[i].conf->id->value,
-					conftab[i].conf->app->id,
+					conftab[i].conf->app_id_value,
 					conftab[i].conf->counter);
 		}
 	}
 
 	fprintf(fp, "};\n\n");
-
-
-
-/*
-	fprintf(fp, "struct fennec_event eventsTable[%d] = {\n", event_counter);
-
-	for ( i = 0; i < event_counter; ) {
-
-		fprintf(fp, "\t{\n");
-		fprintf(fp, "\t\t.operation = %s,\n", relopToLetter(evtab[i].op));
-		fprintf(fp, "\t\t.value = %d,\n", evtab[i].value);
-
-		if (evtab[i].addr == UNKNOWN) {
-			fprintf(fp, "\t\t.addr = TOS_NODE_ID\n");
-		} else {
-			fprintf(fp, "\t\t.addr = %d\n", evtab[i].addr);
-		}
-		if (++i < event_counter) {
-			fprintf(fp, "\t},\n");
-		} else {
-			fprintf(fp, "\t}\n");
-		}
-	}
-
-	fprintf(fp, "};\n\n");
-*/
 
 
         fprintf(fp, "struct fennec_policy policies[NUMBER_OF_POLICIES] = {\n");
@@ -231,16 +211,6 @@ void generateCaches(int event_counter, int policy_counter) {
 
 	fclose(fp);
 	fclose(tmp_confs);
-}
-
-/** Prepares SF configuration for the output. Each configuration's
-module is marked as used and the configuration is added to the 
-conftab list of all configurations.
-
-\param c pointer to configuration structure
-*/
-void generateConfiguration(struct confnode* c) {
-
 }
 
 /** Marks the initial state.

@@ -1,5 +1,0 @@
-
-sfc in program parse_pool/progtest2.sfp
-syntax error at line 2, position 15:
-configuration and { test_blink() nullNet() nullMac() nullRadio() } 
-              ^

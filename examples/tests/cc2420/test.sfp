@@ -1,0 +1,44 @@
+uint16_t dest_node = 73
+uint16_t src_node = 0xFFFF
+
+configuration control { cuApp(1,1,10,10,1)
+                        cuNet()
+                        #nullMac()
+                        cuMac(10, 10, 1, 1, 1)
+			#csmaca(0, 0, 10, 10, 1, 1, 1)
+                        cc2420(26, 31, 1, 1)
+                        #nullRadio()
+}
+
+
+configuration blinking1 { blink(1, 500)
+			nullNet()
+                        nullMac()
+                        nullRadio()
+}
+
+configuration blinking2 { blink(2, 500)
+			nullNet()
+                        nullMac()
+                        nullRadio()
+}
+
+
+event timerMonitor {
+                        timerMilliE(5000, 12)
+                        #timerMilliE(3000, 0xFFFF)
+                        #timerMilliE(3000, event_src)
+                        nullNet()
+                        nullMac()
+                        nullRadio()
+}
+
+state light1 { blinking1 control }
+state light2 { blinking2 control }
+
+from light1 goto light2 when timerMonitor
+from light2 goto light1 when timerMonitor
+
+
+start light1
+

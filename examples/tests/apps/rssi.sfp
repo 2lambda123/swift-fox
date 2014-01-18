@@ -1,5 +1,0 @@
-configuration hello { rssi(500) nullNet() nullMac() nullRadio() }
-
-state test { hello }
-
-start test

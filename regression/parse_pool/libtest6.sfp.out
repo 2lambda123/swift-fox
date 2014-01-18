@@ -1,5 +1,0 @@
-
-sfc in library parse_pool/libtest6.sfl
-syntax error at line 2, position 85:
-use application test_blink $(FENNEC_FOX_LIB)/Application/SimpleBlink (uint8_t foo=2 uint16_t bar)
-                                                                                    ^

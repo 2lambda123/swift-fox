@@ -1,0 +1,20 @@
+
+configuration tester { phidget_z1(5, 50, 5, 0, 50, 5, 7, 50, 1) 
+			# temp sampling frequency, number of temp samples per packet 
+			# phidget1 sampling frequency, phidget1 adc port on Z1, 
+			# number of phidget1 samples per packet
+			# phidget2 sampling frequency, phidget2 adc port on Z1, 
+			# number of phidget2 samples per packet
+			# destination address where to send the packets
+			nullNet()
+			nullMac()
+			nullRadio()
+		      	#ctp(1)
+			#csmaca(2, 0, 10, 10, 1, 1, 1)
+                                # always ON, delay_after_receive, backoff
+                                # min_backoff, ack, cca, crc
+                        #cc2420(26, 31, 1, 1)
+                                # channel, power, ack, crc
+}
+start tester
+

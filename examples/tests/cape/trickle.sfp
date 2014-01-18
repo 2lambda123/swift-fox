@@ -6,6 +6,7 @@ configuration disseminate { counter(20, 1024, src_node, src_node)
                         # always ON, delay_after_receive, backoff, min_backoff
                         # ack, cca, crc
 			cape()
+                        # channel, power, ack, crc
 			}
 
 state test {disseminate}

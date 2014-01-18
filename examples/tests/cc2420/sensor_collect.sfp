@@ -1,0 +1,22 @@
+uint16_t dest_node = 73		# node 73 is collecting sensor data and sending it to laptop
+uint16_t src_node = 0xFFFF	# means every node 
+
+configuration count { counter(60, 1024, src_node, dest_node)	# Application
+			# every 60 seconds send data from every node to dest_node
+
+			ctp(dest_node)				# Network
+			# network gateway, the sensor attached to the laptop
+
+                        csmaca(dest_node, 300, 10, 10, 1, 1, 1)	# MAC
+                        # always ON, delay_after_receive, backoff, min_backoff
+                        # ack, cca, crc
+
+                        cc2420(26, 31, 1, 1)			# Radio
+                        # channel, power, ack, crc
+			}
+
+state test { count }
+
+start test
+
+

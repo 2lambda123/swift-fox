@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <ctype.h>
 #include "utils.h"
 #include "sf.h"
 #include "parser.h"
@@ -147,3 +148,33 @@ int check_path(char *path) {
 	}
 	return 0;
 }
+
+char *str_toupper(char *s) {
+	char *p = s;
+	for(; *p != '\0'; p++ ) {
+		*p = toupper(*p);
+	}
+	return s;
+}
+
+char *conf_module_name(char *conf, char *module) {
+	char *n = NULL;
+	if((n = malloc(strlen(conf) + strlen(module) + 2)) != NULL) {
+		n[0] = '\0';
+		strcat(n, conf);
+		strcat(n, "_");
+		strcat(n, module);
+	} else {
+		printf("malloc failed!\n");
+		// exit?
+	}
+	return str_toupper(n);
+}
+
+
+
+
+
+
+
+

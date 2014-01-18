@@ -209,7 +209,6 @@ traverse_confnode(struct confnode* c, int f) {
 			break;
         
 		case TREE_GENERATE_CODE:
-			generateConfiguration(c);
 			break;
 
 		default:
@@ -267,7 +266,6 @@ traverse_statenode(struct statenode* s, int f) {
 			break;
         
 		case TREE_GENERATE_CODE:
-//			generateConfiguration(c);
 			break;
 
 		default:

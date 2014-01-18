@@ -1,0 +1,6 @@
+configuration test { testSerial(1, 1024) nullNet() nullMac() cape() }
+
+state single { test }
+
+start single
+

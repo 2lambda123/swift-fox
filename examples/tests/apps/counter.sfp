@@ -1,5 +1,0 @@
-configuration hello { counter(10, 1024, 0, 10) nullNet() nullMac() nullRadio() }
-
-state test { hello }
-
-start test

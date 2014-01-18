@@ -69,25 +69,10 @@ void setFennecExtra() {
 		exit(1);
 	}
 
-	fprintf(fp_fe, "CFLAGS+=-I$(FENNEC_FOX_LIB)/interfaces\n");
-	fprintf(fp_fe, "CFLAGS+=-I$(FENNEC_FOX_LIB)/system\n");
-	fprintf(fp_fe, "CFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec\n");
-	fprintf(fp_fe, "CFLAGS+=-I$(FENNEC_FOX_LIB)/Fennec/sfc\n");
-	fprintf(fp_fe, "CFLAGS+=-I$(FENNEC_FOX_LIB)/Events\n");
-	fprintf(fp_fe, "include $(FENNEC_FOX_LIB)/sensors/sensors.extra\n");
-	fprintf(fp_fe, "include $(FENNEC_FOX_LIB)/libs/libs.extra\n");
-
-	struct modtab *mp;
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path) {
-			fprintf(fp_fe, "CFLAGS+=-I%s\n", mp->lib->path);
-		}
-	}
-
 	struct libtab *lp;
 	for(lp = libtab; lp < &libtab[NSYMS]; lp++) {
 		if (lp->path && lp->used == 1) {
-			fprintf(fp_fe, "CFLAGS+=-I%s\n", lp->path);
+			fprintf(fp_fe, "PFLAGS+=-I%s\n", lp->path);
 		}
 	}
 

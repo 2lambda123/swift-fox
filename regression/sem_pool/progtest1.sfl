@@ -1,5 +1,0 @@
-# Standard Fennec Fox Applications
-use application test_blink $(FENNEC_FOX_LIB)/Application/SimpleBlink ()
-use application another_blink $(FENNEC_FOX_LIB)/Application/SimpleBlink ()
-
-

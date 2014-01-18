@@ -1,4 +1,0 @@
-# Testing erroneous library definition (invalid application keyword)
-configuration empty { nullApp() nullNet() nullMac() nullRadio()  }
-start empty
-

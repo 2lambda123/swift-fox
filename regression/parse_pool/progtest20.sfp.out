@@ -1,5 +1,0 @@
-
-sfc in program parse_pool/progtest20.sfp
-syntax error at line 4, position 71:
-configuration control { cuApp() cuNet() cuMac(10, 10, 1, 1, 1) cc2420 }
-                                                                      ^

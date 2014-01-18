@@ -1,4 +1,0 @@
-# Testing erroneous program definition (invalid application)
-configuration hello { or() nullNet() nullMac() nullRadio() } 
-start hello
-

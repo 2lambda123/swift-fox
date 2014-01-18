@@ -1,5 +1,0 @@
-# Testing erroneous program definition (invalid operator)
-configuration hello { nullApp() nullNet() nullMac() nullRadio() }
-event-condition bar { timer == 8192 TYPE_SECOND }
-start hello
-

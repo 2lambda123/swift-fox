@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 #include "code_gen.h"
 #include "utils.h"
 
@@ -23,14 +24,12 @@ void generateFennecEngineC() {
 
 	char *full_path = get_sfc_path("", "FennecEngineC.nc");
 	FILE *fp = fopen(full_path, "w");
-
-	struct modtab *mp;
+	int i;
 
 	if (fp == NULL) {
 		fprintf(stderr, "You do not have a permission to write into file: %s\n", full_path);
 		exit(1);
 	}
-
 
 	fprintf(fp, "\n#include <Fennec.h>\n\n");
 	fprintf(fp, "configuration FennecEngineC {\n");
@@ -46,222 +45,345 @@ void generateFennecEngineC() {
 	fprintf(fp, "components CachesC;\n");
   	fprintf(fp, "FennecEngineP.Fennec -> CachesC;\n\n");
 
-  	fprintf(fp, "/* Defined and linked applications */\n\n");
 
-  	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-    		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && ((mp->lib->type == TYPE_APPLICATION) || (mp->lib->type == TYPE_EVENT))) {
-      			fprintf(fp, "components %sC as %s;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sControl -> %s;\n\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sParams <- %s.%sParams;\n\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-     			fprintf(fp, "FennecEngineP.%sNetworkAMSend <- %s.NetworkAMSend;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkReceive <- %s.NetworkReceive;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkSnoop <- %s.NetworkSnoop;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkPacket <- %s.NetworkPacket;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkAMPacket <- %s.NetworkAMPacket;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkPacketAcknowledgements <- %s.NetworkPacketAcknowledgements;\n",
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			if (mp->lib->type == TYPE_EVENT) {
-				fprintf(fp, "FennecEngineP.%sEvent -> %s.Event;\n",
-							mp->lib->full_name,
-							mp->lib->full_name);
-			}
-			fprintf(fp, "\n");
-    		}
-  	}
-
-  	fprintf(fp, "/* Defined and linked network modules */\n\n");
-
-  	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-    		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-      			fprintf(fp, "components %sC as %s;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sControl -> %s;\n\n",
-						mp->lib->full_name,
-						mp->lib->full_name); 
-      			fprintf(fp, "FennecEngineP.%sParams <- %s.%sParams;\n\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkAMSend -> %s.NetworkAMSend;\n",
-						mp->lib->full_name, 
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkReceive -> %s.NetworkReceive;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkSnoop -> %s.NetworkSnoop;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkAMPacket -> %s.NetworkAMPacket;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkPacket -> %s.NetworkPacket;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sNetworkPacketAcknowledgements -> %s.NetworkPacketAcknowledgements;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sMacAMSend <- %s.MacAMSend;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sMacReceive <- %s.MacReceive;\n",
-						mp->lib->full_name, 
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sMacSnoop <- %s.MacSnoop;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sMacAMPacket <- %s.MacAMPacket;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sMacPacket <- %s.MacPacket;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sMacPacketAcknowledgements <- %s.MacPacketAcknowledgements;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-			fprintf(fp, "\n");
-    		}
-  	}
-
-	fprintf(fp, "/* Defined and linked mac */\n\n");
-
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp, "components %sC as %s;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sControl -> %s;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sParams <- %s.%sParams;\n\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sMacAMSend -> %s.MacAMSend;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sMacReceive -> %s.MacReceive;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sMacSnoop -> %s.MacSnoop;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sMacPacket -> %s.MacPacket;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sMacAMPacket -> %s.MacAMPacket;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sMacPacketAcknowledgements -> %s.MacPacketAcknowledgements;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioReceive <- %s.RadioReceive;\n",
-						mp->lib->full_name,
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioResource <- %s.RadioResource;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioConfig <- %s.RadioConfig;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioPower <- %s.RadioPower;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sReadRssi <- %s.ReadRssi;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioBuffer <- %s.RadioBuffer;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioSend <- %s.RadioSend;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioPacket <- %s.RadioPacket;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sPacketIndicator <- %s.PacketIndicator;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sEnergyIndicator <- %s.EnergyIndicator;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sByteIndicator <- %s.ByteIndicator;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioControl <- %s.RadioControl;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+  		fprintf(fp, "/* Defined and linked application module %s with %s state */\n\n", 
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name);
+ 		fprintf(fp, "components new %sC() as %s_%s;\n",
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_Control -> %s_%s;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_Params <- %s_%s.%sParams;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name, 
+					conftab[i].conf->app->lib->name);
+     		fprintf(fp, "FennecEngineP.%s_%s_NetworkAMSend <- %s_%s.NetworkAMSend;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkReceive <- %s_%s.NetworkReceive;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkSnoop <- %s_%s.NetworkSnoop;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkPacket <- %s_%s.NetworkPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkAMPacket <- %s_%s.NetworkAMPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkPacketAcknowledgements <- %s_%s.NetworkPacketAcknowledgements;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		if (conftab[i].conf->app->lib->type == TYPE_EVENT) {
+			fprintf(fp, "FennecEngineP.%s_%s_Event -> %s_%s.Event;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
 		}
-	}
+		fprintf(fp, "\n\n");
 
-	fprintf(fp, "/* Defined and linked radios */\n\n");
+  		fprintf(fp, "/* Defined and linked network module %s with %s state */\n\n", 
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name);
+		fprintf(fp, "components new %sC() as %s_%s;\n",
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_Control -> %s_%s;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name); 
+      		fprintf(fp, "FennecEngineP.%s_%s_Params <- %s_%s.%sParams;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name, 
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkAMSend -> %s_%s.NetworkAMSend;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkReceive -> %s_%s.NetworkReceive;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkSnoop -> %s_%s.NetworkSnoop;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkAMPacket -> %s_%s.NetworkAMPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkPacket -> %s_%s.NetworkPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_NetworkPacketAcknowledgements -> %s_%s.NetworkPacketAcknowledgements;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_MacAMSend <- %s_%s.MacAMSend;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_MacReceive <- %s_%s.MacReceive;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_MacSnoop <- %s_%s.MacSnoop;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_MacAMPacket <- %s_%s.MacAMPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_MacPacket <- %s_%s.MacPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_MacPacketAcknowledgements <- %s_%s.MacPacketAcknowledgements;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_MacLinkPacketMetadata <- %s_%s.MacLinkPacketMetadata;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
 
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp, "components %sC as %s;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sControl -> %s;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-      			fprintf(fp, "FennecEngineP.%sParams <- %s.%sParams;\n\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioReceive -> %s.RadioReceive;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioResource -> %s.RadioResource;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioConfig -> %s.RadioConfig;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioPower -> %s.RadioPower;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sReadRssi -> %s.ReadRssi;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioBuffer -> %s.RadioBuffer;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioSend -> %s.RadioSend;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sRadioPacket -> %s.RadioPacket;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sPacketIndicator -> %s.PacketIndicator;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sEnergyIndicator -> %s.EnergyIndicator;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "FennecEngineP.%sByteIndicator -> %s.ByteIndicator;\n", 
-						mp->lib->full_name, 
-						mp->lib->full_name);
-			fprintf(fp, "\n");
-		}
+		fprintf(fp, "\n\n");
+
+  		fprintf(fp, "/* Defined and linked MAC module %s with %s state */\n\n", 
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name);
+		fprintf(fp, "components new %sC() as %s_%s;\n",
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_Control -> %s_%s;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_Params <- %s_%s.%sParams;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_MacAMSend -> %s_%s.MacAMSend;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_MacReceive -> %s_%s.MacReceive;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_MacSnoop -> %s_%s.MacSnoop;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_MacPacket -> %s_%s.MacPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_MacAMPacket -> %s_%s.MacAMPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_MacPacketAcknowledgements -> %s_%s.MacPacketAcknowledgements;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_MacLinkPacketMetadata -> %s_%s.MacLinkPacketMetadata;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioReceive <- %s_%s.RadioReceive;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioResource <- %s_%s.RadioResource;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioBuffer <- %s_%s.RadioBuffer;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioSend <- %s_%s.RadioSend;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioPacket <- %s_%s.RadioPacket;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_PacketTransmitPower <- %s_%s.PacketTransmitPower;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_PacketRSSI <- %s_%s.PacketRSSI;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_PacketTimeSync <- %s_%s.PacketTimeSync;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_PacketLinkQuality <- %s_%s.PacketLinkQuality;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioCCA <- %s_%s.RadioCCA;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioState <- %s_%s.RadioState;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioLinkPacketMetadata <- %s_%s.RadioLinkPacketMetadata;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\n\n");
+		
+  		fprintf(fp, "/* Defined and linked radio module %s with %s state */\n\n", 
+					conftab[i].conf->radio->lib->name,
+					conftab[i].conf->id->name);
+		fprintf(fp, "components %sC as %s_%s;\n", 
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_Control -> %s_%s;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+      		fprintf(fp, "FennecEngineP.%s_%s_Params <- %s_%s.%sParams;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioReceive -> %s_%s.RadioReceive;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioResource -> %s_%s.RadioResource;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioBuffer -> %s_%s.RadioBuffer;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioSend -> %s_%s.RadioSend;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioPacket -> %s_%s.RadioPacket;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_PacketTransmitPower -> %s_%s.PacketTransmitPower;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_PacketRSSI -> %s_%s.PacketRSSI;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_PacketTimeSync -> %s_%s.PacketTimeSync;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_PacketLinkQuality -> %s_%s.PacketLinkQuality;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioCCA -> %s_%s.RadioCCA;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioState -> %s_%s.RadioState;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "FennecEngineP.%s_%s_RadioLinkPacketMetadata -> %s_%s.RadioLinkPacketMetadata;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\n");
 	}
 
 	fprintf(fp, "\n}\n");
@@ -273,173 +395,279 @@ void generateFennecEngineP() {
 
         char *full_path = get_sfc_path("", "FennecEngineP.nc");
         FILE *fp = fopen(full_path, "w");
-
-        struct modtab *mp;
+	int i;
 
         if (fp == NULL) {
                 fprintf(stderr, "You do not have a permission to write into file: %s\n", full_path);
                 exit(1);
         }
 
-	fprintf(fp, "/* Swift Fox generated code for Fennec Fox Application module */\n");
+	fprintf(fp, "/* Swift Fox generated code for Fennec Fox Computation module */\n");
   	fprintf(fp, "#include <Fennec.h>\n");
   	fprintf(fp, "module FennecEngineP {\n\n");
   	fprintf(fp, "provides interface ModuleCtrl;\n");
 
   	fprintf(fp, "uses interface Leds;\n");
-  	fprintf(fp, "uses interface Fennec;\n");
+  	fprintf(fp, "uses interface Fennec;\n\n");
 
-  	fprintf(fp, "\n\t/* Application Modules */\n\n");
-
-  	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-    		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && ((mp->lib->type == TYPE_APPLICATION) || (mp->lib->type == TYPE_EVENT))) {
-      			fprintf(fp, "/* Application  Module: %s */\n",
-						mp->lib->full_name);
-      			fprintf(fp, "uses interface SplitControl as %sControl;\n", 
-						mp->lib->full_name);
-      			fprintf(fp, "provides interface %sParams;\n", 
-						mp->lib->full_name);
-      			fprintf(fp, "provides interface AMSend as %sNetworkAMSend;\n", 
-						mp->lib->full_name);
-      			fprintf(fp, "provides interface Receive as %sNetworkReceive;\n", 
-						mp->lib->full_name);
-      			fprintf(fp, "provides interface Receive as %sNetworkSnoop;\n", 
-						mp->lib->full_name);
-      			fprintf(fp, "provides interface Packet as %sNetworkPacket;\n", 
-						mp->lib->full_name);
-      			fprintf(fp, "provides interface AMPacket as %sNetworkAMPacket;\n", 
-						mp->lib->full_name);
-      			fprintf(fp, "provides interface PacketAcknowledgements as %sNetworkPacketAcknowledgements;\n", 
-						mp->lib->full_name);
-			if (mp->lib->type == TYPE_EVENT) {
-				fprintf(fp, "uses interface Event as %sEvent;\n",
-						mp->lib->full_name);
-			}
-			fprintf(fp, "\n");
-    		}
-  	}
-
-  	fprintf(fp, "\n\t/* Network Modules */\n\n");
-
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp, "/* Network Module: %s */\n", mp->lib->full_name);
-			fprintf(fp, "uses interface SplitControl as %sControl;\n", mp->lib->full_name);
-      			fprintf(fp, "provides interface %sParams;\n", 
-						mp->lib->full_name);
-
-
-			fprintf(fp, "uses interface AMSend as %sNetworkAMSend;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Receive as %sNetworkReceive;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Receive as %sNetworkSnoop;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface AMPacket as %sNetworkAMPacket;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Packet as %sNetworkPacket;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface PacketAcknowledgements as %sNetworkPacketAcknowledgements;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface AMSend as %sMacAMSend;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface Receive as %sMacReceive;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface Receive as %sMacSnoop;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface Packet as %sMacPacket;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface AMPacket as %sMacAMPacket;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface PacketAcknowledgements as %sMacPacketAcknowledgements;\n", mp->lib->full_name);
-			fprintf(fp, "\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+    		fprintf(fp, "/* Computation Module %s with %s process */\n",
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name);
+      		fprintf(fp, "uses interface SplitControl as %s_%s_Control;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+      		fprintf(fp, "provides interface %sParams as %s_%s_Params;\n", 
+					conftab[i].conf->app->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "provides interface AMSend as %s_%s_NetworkAMSend;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "provides interface Receive as %s_%s_NetworkReceive;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "provides interface Receive as %s_%s_NetworkSnoop;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "provides interface Packet as %s_%s_NetworkPacket;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "provides interface AMPacket as %s_%s_NetworkAMPacket;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "provides interface PacketAcknowledgements as %s_%s_NetworkPacketAcknowledgements;\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		if (conftab[i].conf->app->lib->type == TYPE_EVENT) {
+			fprintf(fp, "uses interface Event as %s_%s_Event;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
 		}
-	}
+		fprintf(fp, "\n\n");
 
-	fprintf(fp, "\n\t/* MAC Modules */\n\n");
+    		fprintf(fp, "/* Network Module %s with %s process */\n",
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name);
+		fprintf(fp, "uses interface SplitControl as %s_%s_Control;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+      		fprintf(fp, "provides interface %sParams as %s_%s_Params;\n", 
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "uses interface AMSend as %s_%s_NetworkAMSend;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "uses interface Receive as %s_%s_NetworkReceive;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "uses interface Receive as %s_%s_NetworkSnoop;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "uses interface AMPacket as %s_%s_NetworkAMPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "uses interface Packet as %s_%s_NetworkPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "uses interface PacketAcknowledgements as %s_%s_NetworkPacketAcknowledgements;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "provides interface AMSend as %s_%s_MacAMSend;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "provides interface Receive as %s_%s_MacReceive;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "provides interface Receive as %s_%s_MacSnoop;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "provides interface Packet as %s_%s_MacPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "provides interface AMPacket as %s_%s_MacAMPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "provides interface PacketAcknowledgements as %s_%s_MacPacketAcknowledgements;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "provides interface LinkPacketMetadata as %s_%s_MacLinkPacketMetadata;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\n\n");
 
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp, "/* MAC Module: %s */\n", mp->lib->full_name);
-			fprintf(fp, "uses interface SplitControl as %sControl;\n", mp->lib->full_name);
+    		fprintf(fp, "/* MAC Module %s with %s process */\n",
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name);
+		fprintf(fp, "uses interface SplitControl as %s_%s_Control;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+      		fprintf(fp, "provides interface %sParams as %s_%s_Params;\n", 
+					conftab[i].conf->mac->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "uses interface AMSend as %s_%s_MacAMSend;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "uses interface Receive as %s_%s_MacReceive;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "uses interface Receive as %s_%s_MacSnoop;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "uses interface Packet as %s_%s_MacPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "uses interface AMPacket as %s_%s_MacAMPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "uses interface PacketAcknowledgements as %s_%s_MacPacketAcknowledgements;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "uses interface LinkPacketMetadata as %s_%s_MacLinkPacketMetadata;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface RadioReceive as %s_%s_RadioReceive;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface Resource as %s_%s_RadioResource;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface RadioBuffer as %s_%s_RadioBuffer;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface RadioSend as %s_%s_RadioSend;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface RadioPacket as %s_%s_RadioPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface RadioCCA as %s_%s_RadioCCA;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface PacketField<uint8_t> as %s_%s_PacketTransmitPower;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface PacketField<uint8_t> as %s_%s_PacketRSSI;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface PacketField<uint32_t> as %s_%s_PacketTimeSync;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface PacketField<uint8_t> as %s_%s_PacketLinkQuality;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface RadioState as %s_%s_RadioState;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "provides interface LinkPacketMetadata as %s_%s_RadioLinkPacketMetadata;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\n\n");
 
-      			fprintf(fp, "provides interface %sParams;\n", 
-						mp->lib->full_name);
 
-
-			fprintf(fp, "uses interface AMSend as %sMacAMSend;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Receive as %sMacReceive;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Receive as %sMacSnoop;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Packet as %sMacPacket;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface AMPacket as %sMacAMPacket;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface PacketAcknowledgements as %sMacPacketAcknowledgements;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface Receive as %sRadioReceive;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface Resource as %sRadioResource;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface RadioConfig as %sRadioConfig;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface RadioPower as %sRadioPower;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface Read<uint16_t> as %sReadRssi;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface RadioBuffer as %sRadioBuffer;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface RadioSend as %sRadioSend;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface RadioPacket as %sRadioPacket;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface ReceiveIndicator as %sPacketIndicator;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface ReceiveIndicator as %sEnergyIndicator;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface ReceiveIndicator as %sByteIndicator;\n", mp->lib->full_name);
-			fprintf(fp, "provides interface SplitControl as %sRadioControl;\n", mp->lib->full_name);
-			fprintf(fp, "\n");
-		}
-	}
-
-	fprintf(fp, "\n\t/* Radio Modules */\n\n");
-
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp, "/* Radio Module: %s */\n", mp->lib->full_name);
-			fprintf(fp, "uses interface SplitControl as %sControl;\n", mp->lib->full_name);
-
-      			fprintf(fp, "provides interface %sParams;\n", 
-						mp->lib->full_name);
-
-
-			fprintf(fp, "uses interface Receive as %sRadioReceive;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Resource as %sRadioResource;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface RadioConfig as %sRadioConfig;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface RadioPower as %sRadioPower;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface Read<uint16_t> as %sReadRssi;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface RadioBuffer as %sRadioBuffer;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface RadioSend as %sRadioSend;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface RadioPacket as %sRadioPacket;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface ReceiveIndicator as %sPacketIndicator;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface ReceiveIndicator as %sEnergyIndicator;\n", mp->lib->full_name);
-			fprintf(fp, "uses interface ReceiveIndicator as %sByteIndicator;\n", mp->lib->full_name);
-			fprintf(fp, "\n");
-		}
+    		fprintf(fp, "/* Radio Module %s with %s process */\n",
+					conftab[i].conf->radio->lib->name,
+					conftab[i].conf->id->name);
+		fprintf(fp, "uses interface SplitControl as %s_%s_Control;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+    		fprintf(fp, "provides interface %sParams as %s_%s_Params;\n", 
+					conftab[i].conf->radio->lib->name,
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface RadioReceive as %s_%s_RadioReceive;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface Resource as %s_%s_RadioResource;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface RadioBuffer as %s_%s_RadioBuffer;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface RadioSend as %s_%s_RadioSend;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface RadioPacket as %s_%s_RadioPacket;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface PacketField<uint8_t> as %s_%s_PacketTransmitPower;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface PacketField<uint8_t> as %s_%s_PacketRSSI;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface PacketField<uint32_t> as %s_%s_PacketTimeSync;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface PacketField<uint8_t> as %s_%s_PacketLinkQuality;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface RadioCCA as %s_%s_RadioCCA;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface RadioState as %s_%s_RadioState;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "uses interface LinkPacketMetadata as %s_%s_RadioLinkPacketMetadata;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\n\n");
 	}
 
 	fprintf(fp,"}\n\n");
 	fprintf(fp,"implementation {\n\n");
 
-	fprintf(fp,"uint8_t layer_request = 0;\n\n");
 	fprintf(fp,"void radioControlStartDone(uint16_t module_id, uint8_t to_layer, error_t error);\n");
 	fprintf(fp,"void radioControlStopDone(uint16_t module_id, uint8_t to_layer, error_t error);\n\n");
 
 	fprintf(fp,"void module_startDone(uint8_t module_id, error_t error) {\n");
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP module_startDone(%%d, %%d)\", module_id, error);\n");
-	fprintf(fp,"\tif (layer_request) {\n");
-	fprintf(fp,"\t\tradioControlStartDone(module_id, layer_request, error);\n");
-	fprintf(fp,"\t\tlayer_request = 0;\n");
-	fprintf(fp,"\t} else {\n");
-	fprintf(fp,"\t\tsignal ModuleCtrl.startDone(module_id, error);\n");
-	fprintf(fp,"\t}\n");
+	fprintf(fp,"\tsignal ModuleCtrl.startDone(module_id, error);\n");
 	fprintf(fp,"}\n\n");
 
 	fprintf(fp,"void module_stopDone(uint8_t module_id, error_t error) {\n");
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP module_stopDone(%%d, %%d)\", module_id, error);\n");
-	fprintf(fp,"\tif (layer_request) {\n");
-	fprintf(fp,"\t\tradioControlStopDone(module_id, layer_request, error);\n");
-	fprintf(fp,"\t\tlayer_request = 0;\n");
-	fprintf(fp,"\t} else {\n");
-	fprintf(fp,"\t\tsignal ModuleCtrl.stopDone(module_id, error);\n");
-	fprintf(fp,"\t}\n");
+	fprintf(fp,"\tsignal ModuleCtrl.stopDone(module_id, error);\n");
 	fprintf(fp,"}\n\n");
 
 	fprintf(fp,"command error_t ModuleCtrl.start(uint8_t module_id) {\n");
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP ModuleCtrl.start(%%d)\", module_id);\n");
 	fprintf(fp,"\tswitch(module_id) {\n\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-        	if (mp->lib != NULL && mp->lib->path && mp->id > 0) {
-                	fprintf(fp, "\tcase %d:\n", mp->id);
-			fprintf(fp, "\t\tdbg(\"FennecEngine\", \"FennecEngineP call %sControl.start()\");\n", mp->lib->full_name);
-	                fprintf(fp, "\t\treturn call %sControl.start();\n", mp->lib->full_name);
-        	}
+
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->app_id_name);
+		fprintf(fp, "\t\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_Control.start()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\t\treturn call %s_%s_Control.start();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp, "\t\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_Control.start()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\t\treturn call %s_%s_Control.start();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp, "\t\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_Control.start()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\t\treturn call %s_%s_Control.start();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp, "\t\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_Control.start()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\t\treturn call %s_%s_Control.start();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"\treturn FAIL;\n");
@@ -449,12 +677,38 @@ void generateFennecEngineP() {
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP ModuleCtrl.stop(%%d)\", module_id);\n");
 
 	fprintf(fp,"\tswitch(module_id) {\n\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-	        if (mp->lib != NULL && mp->lib->path && mp->id > 0) {
-        	        fprintf(fp, "\tcase %d:\n", mp->id);
-			fprintf(fp, "\t\tdbg(\"FennecEngine\", \"FennecEngineP call %sControl.stop()\");\n", mp->lib->full_name);
-                	fprintf(fp, "\t\treturn call %sControl.stop();\n", mp->lib->full_name);
-	        }
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->app_id_name);
+		fprintf(fp, "\t\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_Control.stop()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\t\treturn call %s_%s_Control.stop();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp, "\t\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_Control.stop()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\t\treturn call %s_%s_Control.stop();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp, "\t\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_Control.stop()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\t\treturn call %s_%s_Control.stop();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp, "\t\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_Control.stop()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\t\treturn call %s_%s_Control.stop();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"\treturn FAIL;\n");
@@ -465,17 +719,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, addr, msg, len);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMSend.send(addr, msg, len);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMSend.send(addr, msg, len);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMSend.send(addr, msg, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMSend.send(addr, msg, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn FAIL;\n");
@@ -488,17 +741,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMSend.cancel(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMSend.cancel(msg);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMSend.cancel(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMSend.cancel(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn FAIL;\n");
@@ -511,17 +763,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, len);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMSend.getPayload(msg, len);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMSend.getPayload(msg, len);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMSend.getPayload(msg, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMSend.getPayload(msg, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn NULL;\n");
@@ -533,17 +784,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP AMSend_maxPayloadLength(%%d, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMSend.maxPayloadLength();\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMSend.maxPayloadLength();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMSend.maxPayloadLength();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMSend.maxPayloadLength();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -555,17 +805,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP AMPacket_address(%%d, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.address();\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.address();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.address();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.address();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -578,17 +827,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.destination(msg);\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.destination(msg);\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.destination(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.destination(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -601,17 +849,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.source(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.source(msg);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.source(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.source(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -624,17 +871,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, addr);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.setDestination(msg, addr);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.setDestination(msg, addr);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.setDestination(msg, addr);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.setDestination(msg, addr);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn;\n");
@@ -647,17 +893,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, addr);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.setSource(msg, addr);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.setSource(msg, addr);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.setSource(msg, addr);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.setSource(msg, addr);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn;\n");
@@ -671,17 +916,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.isForMe(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.isForMe(msg);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.isForMe(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.isForMe(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -694,17 +938,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.type(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.type(msg);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.type(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.type(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -717,17 +960,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, t);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.setType(msg, t);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.setType(msg, t);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.setType(msg, t);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.setType(msg, t);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn;\n");
@@ -740,17 +982,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.group(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.group(msg);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.group(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.group(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -763,17 +1004,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, grp);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.setGroup(msg, grp);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.setGroup(msg, grp);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.setGroup(msg, grp);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.setGroup(msg, grp);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn;\n");
@@ -781,22 +1021,44 @@ void generateFennecEngineP() {
 	fprintf(fp,"}\n\n");
 
 
+
+	fprintf(fp,"am_group_t AMPacket_localGroup(uint16_t module_id, uint8_t to_layer) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP Packet_localGroup(%%d, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkAMPacket.localGroup();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacAMPacket.localGroup();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+
 	fprintf(fp,"void* Packet_getPayload(uint16_t module_id, uint8_t to_layer, message_t *msg, uint8_t len) {\n");
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP Packet_getPayload(%%d, %%d, 0x%%1x, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, len);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkPacket.getPayload(msg, len);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacPacket.getPayload(msg, len);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkPacket.getPayload(msg, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacPacket.getPayload(msg, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn NULL;\n");
@@ -808,39 +1070,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP Packet_maxPayloadLength(%%d, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkPacket.maxPayloadLength();\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacPacket.maxPayloadLength();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkPacket.maxPayloadLength();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
 
-
-	fprintf(fp,"am_group_t AMPacket_localGroup(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP Packet_localGroup(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkAMPacket.localGroup();\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacAMPacket.localGroup();\n\n", mp->lib->full_name);
-		}
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacPacket.maxPayloadLength();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -853,17 +1092,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkPacket.clear(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacPacket.clear(msg);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkPacket.clear(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacPacket.clear(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn;\n");
@@ -876,17 +1114,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkPacket.payloadLength(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacPacket.payloadLength(msg);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkPacket.payloadLength(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacPacket.payloadLength(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -899,17 +1136,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, len);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkPacket.setPayloadLength(msg, len);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacPacket.setPayloadLength(msg, len);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkPacket.setPayloadLength(msg, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacPacket.setPayloadLength(msg, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn;\n");
@@ -922,17 +1158,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkPacketAcknowledgements.requestAck(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacPacketAcknowledgements.requestAck(msg);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkPacketAcknowledgements.requestAck(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacPacketAcknowledgements.requestAck(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn FAIL;\n");
@@ -945,17 +1180,16 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkPacketAcknowledgements.noAck(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacPacketAcknowledgements.noAck(msg);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkPacketAcknowledgements.noAck(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacPacketAcknowledgements.noAck(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn FAIL;\n");
@@ -968,356 +1202,57 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sNetworkPacketAcknowledgements.wasAcked(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sMacPacketAcknowledgements.wasAcked(msg);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_NetworkPacketAcknowledgements.wasAcked(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacPacketAcknowledgements.wasAcked(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"bool LinkPacketMetadata_highChannelQuality(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP LinkPacketMetadata_highChannelQuality(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_MacLinkPacketMetadata.highChannelQuality(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioLinkPacketMetadata.highChannelQuality(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn FALSE;\n");
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"}\n\n");
 
 
 	/* Radio Only Interfaces */
 
-	fprintf(fp,"error_t RadioConfig_sync(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_sync(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.sync();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"uint8_t RadioConfig_getChannel(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_getChannel(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.getChannel();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"void RadioConfig_setChannel(uint16_t module_id, uint8_t to_layer, uint8_t channel) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_setChannel(%%d, %%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer, channel);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.setChannel( channel );\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"uint16_t RadioConfig_getShortAddr(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_getShortAddr(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.getShortAddr();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"void RadioConfig_setShortAddr(uint16_t module_id, uint8_t to_layer, uint16_t address) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_setShortAddr(%%d, %%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer, address);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.setShortAddr(address);\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"uint16_t RadioConfig_getPanAddr(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_getPanAddr(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.getPanAddr();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"void RadioConfig_setPanAddr(uint16_t module_id, uint8_t to_layer, uint16_t address) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_setPanAddr(%%d, %%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer, address);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.setPanAddr(address);\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"void RadioConfig_setAddressRecognition(uint16_t module_id, uint8_t to_layer, bool enableAddressRecognition, bool useHwAddressRecognition) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_setAddressRecognition(%%d, %%d, %%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer, enableAddressRecognition, useHwAddressRecognition);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.setAddressRecognition(enableAddressRecognition, useHwAddressRecognition);\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"bool RadioConfig_isAddressRecognitionEnabled(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_isAddressRecognicationEnabled(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.isAddressRecognitionEnabled();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"bool RadioConfig_isHwAddressRecognitionDefault(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_isHwAddressRecognicationDefault(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.isHwAddressRecognitionDefault();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-
-	fprintf(fp,"void RadioConfig_setAutoAck(uint16_t module_id, uint8_t to_layer, bool enableAutoAck, bool hwAutoAck) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_setAutoAck(%%d, %%d, %%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer, enableAutoAck, hwAutoAck);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.setAutoAck(enableAutoAck, hwAutoAck);\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"bool RadioConfig_isHwAutoAckDefault(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_isHwAutoAckDefault(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.isHwAutoAckDefault();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"bool RadioConfig_isAutoAckEnabled(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioConfig_isAutoAckEnabled(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioConfig.isAutoAckEnabled();\n\n", mp->lib->full_name);
-		}	
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"error_t RadioPower_startVReg(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPower_startVReg(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioPower.startVReg();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"error_t RadioPower_stopVReg(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPower_stopVReg(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioPower.stopVReg();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"error_t RadioPower_startOscillator(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPower_startOscillator(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioPower.startOscillator();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"error_t RadioPower_stopOscillator(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPower_stopOscillator(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioPower.stopOscillator();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"error_t RadioPower_rxOn(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPower_rxOn(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioPower.rxOn();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"error_t RadioPower_rfOff(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPower_rxOff(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioPower.rfOff();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"error_t ReadRssi_read(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP ReadRssi_read(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sReadRssi.read();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
 
 
 	fprintf(fp,"error_t RadioResource_request(uint16_t module_id, uint8_t to_layer) {\n");
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioResource_request(%%d, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioResource.request();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioResource.request();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn FAIL;\n");
@@ -1329,11 +1264,11 @@ void generateFennecEngineP() {
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioResource_immediateRequest(%%d, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioResource.immediateRequest();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioResource.immediateRequest();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -1345,11 +1280,11 @@ void generateFennecEngineP() {
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioResource_release(%%d, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioResource.release();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioResource.release();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -1361,47 +1296,14 @@ void generateFennecEngineP() {
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioResource_isOwner(%%d, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioResource.isOwner();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioResource.isOwner();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"error_t RadioControl_start(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioControl_start(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tlayer_request = F_MAC;\n");
-	fprintf(fp,"\treturn call ModuleCtrl.start( call Fennec.getNextModuleId(module_id, to_layer) );\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"error_t RadioControl_stop(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioControl_stop(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tlayer_request = F_MAC;\n");
-	fprintf(fp,"\treturn call ModuleCtrl.stop( call Fennec.getNextModuleId(module_id, to_layer) );\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"error_t RadioSend_cancel(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioSend_cancel(%%d, %%d, 0x%%1x)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
-	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioSend.cancel(msg);\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn FAIL;\n");
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"}\n\n");
 
@@ -1411,11 +1313,11 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, useCca);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioSend.send(msg, useCca);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioSend.send(msg, useCca);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn FAIL;\n");
@@ -1424,14 +1326,14 @@ void generateFennecEngineP() {
 
 
 	fprintf(fp,"uint8_t RadioPacket_maxPayloadLength(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP Radiopacket_maxPayloadLength(%%d, %%d)\",\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPacket_maxPayloadLength(%%d, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioPacket.maxPayloadLength();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioPacket.maxPayloadLength();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -1439,19 +1341,84 @@ void generateFennecEngineP() {
 	fprintf(fp,"}\n\n");
 
 
-	fprintf(fp,"void* RadioPacket_getPayload(uint16_t module_id, uint8_t to_layer, message_t* msg, uint8_t len) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPacket_getPayload(%%d, %%d, 0x%%1x, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, len);\n");
-	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
+	fprintf(fp,"uint8_t RadioPacket_headerLength(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPacket_headerLength(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioPacket.getPayload(msg, len);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioPacket.headerLength(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
-	fprintf(fp,"\t\treturn NULL;\n");
+	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"uint8_t RadioPacket_payloadLength(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPacket_payloadLength(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioPacket.payloadLength(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void RadioPacket_setPayloadLength(uint16_t module_id, uint8_t to_layer, message_t *msg, uint8_t length) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPacket_setPayloadLength(%%d, %%d, 0x%%1x, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, length);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\tcall %s_%s_RadioPacket.setPayloadLength(msg, length);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"uint8_t RadioPacket_metadataLength(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPacket_metadataLength(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioPacket.metadataLength(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void RadioPacket_clear(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioPacket_clear(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\tcall %s_%s_RadioPacket.clear(msg);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn;\n");
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"}\n\n");
 
@@ -1461,11 +1428,11 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sRadioBuffer.load(msg);\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioBuffer.load(msg);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn FAIL;\n");
@@ -1473,16 +1440,15 @@ void generateFennecEngineP() {
 	fprintf(fp,"}\n\n");
 
 
-
-	fprintf(fp,"bool PacketIndicator_isReceiving(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketIndicator_isReceiving(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"bool PacketTransmitPower_isSet(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketTransmitPower_isSet(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sPacketIndicator.isReceiving();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_PacketTransmitPower.isSet(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -1490,15 +1456,15 @@ void generateFennecEngineP() {
 	fprintf(fp,"}\n\n");
 
 
-	fprintf(fp,"bool EnergyIndicator_isReceiving(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP EnergyIndicator_isReceiving(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"uint8_t PacketTransmitPower_get(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketTransmitPower_get(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sEnergyIndicator.isReceiving();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_PacketTransmitPower.get(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
@@ -1506,20 +1472,337 @@ void generateFennecEngineP() {
 	fprintf(fp,"}\n\n");
 
 
-	fprintf(fp,"bool ByteIndicator_isReceiving(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP ByteIndicator_isReceiving(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"void PacketTransmitPower_clear(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketTransmitPower_clear(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn call %sByteIndicator.isReceiving();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\tcall %s_%s_PacketTransmitPower.clear(msg);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void PacketTransmitPower_set(uint16_t module_id, uint8_t to_layer, message_t *msg, uint8_t value) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketTransmitPower_set(%%d, %%d, 0x%%1x, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, value);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\tcall %s_%s_PacketTransmitPower.set(msg, value);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+
+	fprintf(fp,"bool PacketRSSI_isSet(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketRSSI_isSet(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_PacketRSSI.isSet(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn 0;\n");
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"uint8_t PacketRSSI_get(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketRSSI_get(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_PacketRSSI.get(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void PacketRSSI_clear(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketRSSI_clear(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\tcall %s_%s_PacketRSSI.clear(msg);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void PacketRSSI_set(uint16_t module_id, uint8_t to_layer, message_t *msg, uint8_t value) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketRSSI_set(%%d, %%d, 0x%%1x, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, value);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\tcall %s_%s_PacketRSSI.set(msg, value);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"bool PacketTimeSync_isSet(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketTimeSync_isSet(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_PacketTimeSync.isSet(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"uint32_t PacketTimeSync_get(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketTimeSync_get(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_PacketTimeSync.get(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void PacketTimeSync_clear(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketTimeSync_clear(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\tcall %s_%s_PacketTimeSync.clear(msg);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void PacketTimeSync_set(uint16_t module_id, uint8_t to_layer, message_t *msg, uint32_t value) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketTimeSync_set(%%d, %%d, 0x%%1x, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, value);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\tcall %s_%s_PacketTimeSync.set(msg, value);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"bool PacketLinkQuality_isSet(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketLinkQuality_isSet(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_PacketLinkQuality.isSet(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"uint8_t PacketLinkQuality_get(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketLinkQuality_get(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_PacketLinkQuality.get(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void PacketLinkQuality_clear(uint16_t module_id, uint8_t to_layer, message_t *msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketLinkQuality_clear(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\tcall %s_%s_PacketLinkQuality.clear(msg);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void PacketLinkQuality_set(uint16_t module_id, uint8_t to_layer, message_t *msg, uint8_t value) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP PacketLinkQuality_set(%%d, %%d, 0x%%1x, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, value);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\tcall %s_%s_PacketLinkQuality.set(msg, value);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"error_t RadioCCA_request(uint16_t module_id, uint8_t to_layer) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioCCA_request(%%d, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioCCA.request();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn FAIL;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"error_t RadioState_turnOff(uint16_t module_id, uint8_t to_layer) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioState_turnOff(%%d, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioState.turnOff();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn FALSE;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"error_t RadioState_standby(uint16_t module_id, uint8_t to_layer) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioState_standby(%%d, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioState.standby();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn FALSE;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"error_t RadioState_turnOn(uint16_t module_id, uint8_t to_layer) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioState_turnOn(%%d, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioState.turnOn();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn FALSE;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"error_t RadioState_setChannel(uint16_t module_id, uint8_t to_layer, uint8_t channel) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioState_setChannel(%%d, %%d, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, channel);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioState.setChannel(channel);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn FALSE;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"uint8_t RadioState_getChannel(uint16_t module_id, uint8_t to_layer) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioState_getChannel(%%d, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->radio_id_name);
+		fprintf(fp,"\t\treturn call %s_%s_RadioState.getChannel();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn 0;\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+
+	/* Events */
 
 
 	fprintf(fp,"void sendDone(uint16_t module_id, uint8_t to_layer, message_t* msg, error_t error) {\n");
@@ -1527,26 +1810,18 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, error);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_EVENT) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\tsignal %sNetworkAMSend.sendDone(msg, error);\n", mp->lib->full_name);
-			fprintf(fp,"\t\treturn;\n\n");
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_APPLICATION) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\tsignal %sNetworkAMSend.sendDone(msg, error);\n", mp->lib->full_name);
-			fprintf(fp,"\t\treturn;\n\n");
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\tsignal %sMacAMSend.sendDone(msg, error);\n", mp->lib->full_name);
-			fprintf(fp,"\t\treturn;\n\n");
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->app_id_name);
+		fprintf(fp,"\t\tsignal %s_%s_NetworkAMSend.sendDone(msg, error);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\tsignal %s_%s_MacAMSend.sendDone(msg, error);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn;\n");
@@ -1555,41 +1830,23 @@ void generateFennecEngineP() {
 
 
 	fprintf(fp,"message_t* receive(uint16_t module_id, uint8_t to_layer, message_t* msg, void* payload, uint8_t len) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP sendDone(%%d, %%d, 0x%%1x, 0x%%1x, %%d)\",\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP receive(%%d, %%d, 0x%%1x, 0x%%1x, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, payload, len);\n");
-	fprintf(fp,"\tif (call Fennec.checkPacket(msg, len) != SUCCESS) {\n");
+	fprintf(fp,"\tif (call Fennec.checkPacket(msg) != SUCCESS) {\n");
 	fprintf(fp,"\t\t return msg;\n");
 	fprintf(fp,"\t}\n\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	fprintf(fp,"\t\treturn msg;\n");
-	fprintf(fp,"\t}\n\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->app_id_name);
+		fprintf(fp,"\t\treturn signal %s_%s_NetworkReceive.receive(msg, payload, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
 
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_EVENT) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sNetworkReceive.receive(msg, payload, len);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_APPLICATION) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sNetworkReceive.receive(msg, payload, len);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sMacReceive.receive(msg, payload, len);\n\n", mp->lib->full_name);
-		}
-	}
-
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sRadioReceive.receive(msg, payload, len);\n\n", mp->lib->full_name);
-		}
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn signal %s_%s_MacReceive.receive(msg, payload, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn msg;\n\n");
@@ -1598,33 +1855,23 @@ void generateFennecEngineP() {
 
 
 	fprintf(fp,"message_t* snoop(uint16_t module_id, uint8_t to_layer, message_t* msg, void* payload, uint8_t len) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP sendDone(%%d, %%d, 0x%%1x, 0x%%1x, %%d)\",\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP snoop(%%d, %%d, 0x%%1x, 0x%%1x, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, payload, len);\n");
-	fprintf(fp,"\tif (call Fennec.checkPacket(msg, len) != SUCCESS) {\n");
+	fprintf(fp,"\tif (call Fennec.checkPacket(msg) != SUCCESS) {\n");
 	fprintf(fp,"\t\t return msg;\n");
 	fprintf(fp,"\t}\n\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	fprintf(fp,"\t\treturn msg;\n");
-	fprintf(fp,"\t}\n\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_EVENT) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sNetworkSnoop.receive(msg, payload, len);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_APPLICATION) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sNetworkSnoop.receive(msg, payload, len);\n\n", mp->lib->full_name);
-		}
-	}
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sMacSnoop.receive(msg, payload, len);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->app_id_name);
+		fprintf(fp,"\t\treturn signal %s_%s_NetworkSnoop.receive(msg, payload, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->net_id_name);
+		fprintf(fp,"\t\treturn signal %s_%s_MacSnoop.receive(msg, payload, len);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
 	}
 	fprintf(fp,"\tdefault:\n");
 	fprintf(fp,"\t\treturn msg;\n\n");
@@ -1632,60 +1879,7 @@ void generateFennecEngineP() {
 	fprintf(fp,"}\n\n");
 
 
-	fprintf(fp,"void syncDone(uint16_t module_id, uint8_t to_layer, error_t error) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP syncDone(%%d, %%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer, error);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sRadioConfig.syncDone(error);\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"void startVRegDone(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP startVRegDone(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sRadioPower.startVRegDone();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"void startOscillatorDone(uint16_t module_id, uint8_t to_layer) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP startOscillatorDone(%%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sRadioPower.startOscillatorDone();\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
-
-
-	fprintf(fp,"void readRssiDone(uint16_t module_id, uint8_t to_layer, error_t error, uint16_t rssi) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP readRssiDone(%%d, %%d, %%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer, error, rssi);\n");
-	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sReadRssi.readDone(error, rssi);\n\n", mp->lib->full_name);
-		}
-	}
-	fprintf(fp,"\t}\n");
-	fprintf(fp,"}\n\n");
+	/* Radio Only events */
 
 
 
@@ -1693,11 +1887,11 @@ void generateFennecEngineP() {
 	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP granted(%%d, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sRadioResource.granted();\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn signal %s_%s_RadioResource.granted();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"}\n\n");
@@ -1708,638 +1902,1035 @@ void generateFennecEngineP() {
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, error);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sRadioBuffer.loadDone(msg, error);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn signal %s_%s_RadioBuffer.loadDone(msg, error);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"}\n\n");
 
 
-	fprintf(fp,"void transmitSendDone(uint16_t module_id, uint8_t to_layer, message_t *msg, error_t error) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP transmitSendDone(%%d, %%d, 0x%%1x, %%d)\",\n");
+	fprintf(fp,"void RadioSend_sendDone(uint16_t module_id, uint8_t to_layer, message_t *msg, error_t error) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioSend_sendDone(%%d, %%d, 0x%%1x, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer, msg, error);\n");
 	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sRadioSend.sendDone(msg, error);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn signal %s_%s_RadioSend.sendDone(msg, error);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"}\n\n");
 
 
-	fprintf(fp,"void radioControlStartDone(uint16_t module_id, uint8_t to_layer, error_t error) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP radioControlStartDone(%%d, %%d, %%d)\",\n");
+	fprintf(fp,"void RadioSend_ready(uint16_t module_id, uint8_t to_layer) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioSend_ready(%%d, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn signal %s_%s_RadioSend.ready();\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+	}
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void RadioState_done(uint16_t module_id, uint8_t to_layer) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioState_done(%%d, %%d)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\tsignal %s_%s_RadioState.done();\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
+	}
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"void RadioCCA_done(uint16_t module_id, uint8_t to_layer, error_t error) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioCCA_done(%%d, %%d, %%d)\",\n");
 	fprintf(fp,"\t\t\tmodule_id, to_layer, error);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sRadioControl.startDone(error);\n\n", mp->lib->full_name);
-		}		
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\tsignal %s_%s_RadioCCA.done(error);\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp,"\t\treturn;\n\n");
 	}
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"}\n\n");
 
 
-	fprintf(fp,"void radioControlStopDone(uint16_t module_id, uint8_t to_layer, error_t error) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP radioControlStopDone(%%d, %%d, %%d)\",\n");
-	fprintf(fp,"\t\t\tmodule_id, to_layer, error);\n");
+	fprintf(fp,"message_t* RadioReceive_receive(uint16_t module_id, uint8_t to_layer, message_t* msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioReceive_receive(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tif (call Fennec.checkPacket(msg) != SUCCESS) {\n");
+	fprintf(fp,"\t\t return msg;\n");
+	fprintf(fp,"\t}\n\n");
+	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
 	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp,"\tcase %d:\n", mp->id);
-			fprintf(fp,"\t\treturn signal %sRadioControl.stopDone(error);\n\n", mp->lib->full_name);
-		}
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn signal %s_%s_RadioReceive.receive(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn msg;\n\n");
 	fprintf(fp,"\t}\n");
 	fprintf(fp,"}\n\n");
+
+
+	fprintf(fp,"bool RadioReceive_header(uint16_t module_id, uint8_t to_layer, message_t* msg) {\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"FennecEngineP RadioReceive_header(%%d, %%d, 0x%%1x)\",\n");
+	fprintf(fp,"\t\t\tmodule_id, to_layer, msg);\n");
+	fprintf(fp,"\tif (call Fennec.checkPacket(msg) != SUCCESS) {\n");
+	fprintf(fp,"\t\t return 0;\n");
+	fprintf(fp,"\t}\n\n");
+	fprintf(fp,"\tmsg->conf = call Fennec.getConfId(module_id);\n");
+	fprintf(fp,"\tswitch( call Fennec.getNextModuleId(module_id, to_layer) ) {\n");
+	for( i = 0; i < conf_id_counter; i++ ) {
+                fprintf(fp, "\tcase %s:\n", conftab[i].conf->mac_id_name);
+		fprintf(fp,"\t\treturn signal %s_%s_RadioReceive.header(msg);\n\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+	}
+	fprintf(fp,"\tdefault:\n");
+	fprintf(fp,"\t\treturn 0;\n\n");
+	fprintf(fp,"\t}\n");
+	fprintf(fp,"}\n\n");
+
 
 	struct paramtype *pt;
 
-	/* Interfaces with Applications */
+	/* Interfaces with Computations */
 
+	for( i = 0; i < conf_id_counter; i++ ) {
 
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && ((mp->lib->type == TYPE_APPLICATION) || (mp->lib->type == TYPE_EVENT))) {
-			fprintf(fp, "\n/* Linking Application %s */\n", mp->lib->full_name);
+		fprintf(fp, "\n/* Linking Computation %s */\n",
+					conftab[i].conf->app->lib->name);
 
-			fprintf(fp, "\t/* Module Control Interface */\n\n");	
+		fprintf(fp, "\t/* Module Control Interface */\n\n");	
 
-			fprintf(fp, "event void %sControl.startDone(error_t err){\n", mp->lib->full_name);
-			fprintf(fp, "\tmodule_startDone(%d, err);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "event void %sControl.stopDone(error_t err) {\n", mp->lib->full_name);
-			fprintf(fp, "\tmodule_stopDone(%d, err);\n", mp->id);
-			fprintf(fp, "}\n\n");
+		fprintf(fp, "event void %s_%s_Control.startDone(error_t err){\n", 
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tmodule_startDone(%s, err);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "event void %s_%s_Control.stopDone(error_t err) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tmodule_stopDone(%s, err);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
 
-			if (mp->lib->type == TYPE_EVENT) {
-				fprintf(fp, "\t/* Event Interface */\n\n");	
-				fprintf(fp, "event void %sEvent.occured(uint16_t oc) {\n", mp->lib->full_name);
-				fprintf(fp, "\tcall Fennec.eventOccured(%d, oc);\n", mp->id);
-				fprintf(fp, "}\n\n");
-			}
-
-			fprintf(fp, "\t/* Parameter Interface */\n\n");	
-
-			/* check if the interface is empty, if it is add dummy call */
-			if (mp->lib->params == NULL) {
-				fprintf(fp, "command void %sParams.dummy() {}\n", mp->lib->full_name);
-			}
-
-			for(pt = mp->lib->params; pt != NULL; pt = pt->child ) {
-				fprintf(fp, "command %s %sParams.get_%s() {\n",
-						type_name(pt->type), 
-						mp->lib->full_name, 
-						pt->name);
-				fprintf(fp, "\tstruct %s_params_ptr *params = (struct %s_params_ptr*) (call Fennec.getConfParams(%d)).application;\n", 
-							mp->lib->full_name, 
-							mp->lib->full_name, 
-							mp->id);
-				fprintf(fp, "\treturn *(params->%s);\n", pt->name);
-				fprintf(fp, "}\n\n");
-
-				fprintf(fp, "command error_t %sParams.set_%s(%s new_%s) {\n",
-						mp->lib->full_name, 
-						pt->name, 
-						type_name(pt->type), 
-						pt->name);
-				fprintf(fp, "\tstruct %s_params_ptr *params = (struct %s_params_ptr*) (call Fennec.getConfParams(%d)).application;\n", 
-							mp->lib->full_name, 
-							mp->lib->full_name, 
-							mp->id);
-
-				fprintf(fp, "\t*params->%s = new_%s;\n", 
-						pt->name,
-						pt->name);
-				fprintf(fp, "\treturn SUCCESS;\n");
-		                fprintf(fp, "}\n\n");
-		        }
-
-			fprintf(fp, "command error_t %sNetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {\n",
-						mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMSend.send()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMSend_send(%d, F_NETWORK, addr, msg, len);\n", 
-						mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command error_t %sNetworkAMSend.cancel(message_t* msg) {\n",
-						mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMSend.cancel()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMSend_cancel(%d, F_NETWORK, msg);\n",
-						mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command uint8_t %sNetworkAMSend.maxPayloadLength() {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMSend.maxPayloadLength()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMSend_maxPayloadLength(%d, F_NETWORK);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command void* %sNetworkAMSend.getPayload(message_t* msg, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMSend.getPayload()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMSend_getPayload(%d, F_NETWORK, msg, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command am_addr_t %sNetworkAMPacket.address() {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.address()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_address(%d, F_NETWORK);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command am_addr_t %sNetworkAMPacket.destination(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.destination()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_destination(%d, F_NETWORK, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command am_addr_t %sNetworkAMPacket.source(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.source()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_source(%d, F_NETWORK, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command void %sNetworkAMPacket.setDestination(message_t* msg, am_addr_t addr) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.setDestination()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_setDestination(%d, F_NETWORK, msg, addr);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command void %sNetworkAMPacket.setSource(message_t* msg, am_addr_t addr) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.setSource()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_setSource(%d, F_NETWORK, msg, addr);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command bool %sNetworkAMPacket.isForMe(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.isForMe()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_isForMe(%d, F_NETWORK, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command am_id_t %sNetworkAMPacket.type(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.type()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_type(%d, F_NETWORK, msg);\n",mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command void %sNetworkAMPacket.setType(message_t* msg, am_id_t t) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.setType()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_setType(%d, F_NETWORK, msg, t);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command am_group_t %sNetworkAMPacket.group(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.group()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_group(%d, F_NETWORK, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command void %sNetworkAMPacket.setGroup(message_t* msg, am_group_t grp) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.setGroup()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_setGroup(%d, F_NETWORK, msg, grp);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command am_group_t %sNetworkAMPacket.localGroup() {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkAMPacket.localGroup()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_localGroup(%d, F_NETWORK);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command void %sNetworkPacket.clear(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkPacket.clear()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn Packet_clear(%d, F_NETWORK, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command uint8_t %sNetworkPacket.payloadLength(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkPacket.payloadLength()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn Packet_payloadLength(%d, F_NETWORK, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command void %sNetworkPacket.setPayloadLength(message_t* msg, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkPacket.setPayloadLength()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn Packet_setPayloadLength(%d, F_NETWORK, msg, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command uint8_t %sNetworkPacket.maxPayloadLength() {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkPacket.maxPayloadLength()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn Packet_maxPayloadLength(%d, F_NETWORK);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command void* %sNetworkPacket.getPayload(message_t* msg, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkPacket.getPayload()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn Packet_getPayload(%d, F_NETWORK, msg, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "async command error_t %sNetworkPacketAcknowledgements.requestAck( message_t* msg ) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkPacket.requestAck()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn PacketAcknowledgements_requestAck(%d, F_NETWORK, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "async command error_t %sNetworkPacketAcknowledgements.noAck( message_t* msg ) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkPacket.noAck()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn PacketAcknowledgements_noAck(%d, F_NETWORK, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "async command bool %sNetworkPacketAcknowledgements.wasAcked(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %sNetworkPacket.wasAcked()\");\n",
-						mp->lib->full_name);
-			fprintf(fp, "\treturn PacketAcknowledgements_wasAcked(%d, F_NETWORK, msg);\n", mp->id);
+		if (conftab[i].conf->app->lib->type == TYPE_EVENT) {
+			fprintf(fp, "\t/* Event Interface */\n\n");	
+			fprintf(fp, "event void %s_%s_Event.occured(uint16_t oc) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+			fprintf(fp, "\tcall Fennec.eventOccured(%s, oc);\n",
+					conftab[i].conf->app_id_name);
 			fprintf(fp, "}\n\n");
 		}
-	}
 
-  /* Interfaces with Networks */
+		fprintf(fp, "\t/* Parameter Interface */\n\n");	
 
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_NETWORK) {
-			fprintf(fp, "event void %sControl.startDone(error_t err) {\n", mp->lib->full_name);
-			fprintf(fp, "\tmodule_startDone(%d, err);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "event void %sControl.stopDone(error_t err) {\n", mp->lib->full_name);
-			fprintf(fp, "\tmodule_stopDone(%d, err);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-
-			fprintf(fp, "\t/* Parameter Interfaces */\n\n");	
-
-			/* check if the interface is empty, if it is add dummy call */
-			if (mp->lib->params == NULL) {
-				fprintf(fp, "command void %sParams.dummy() {}\n", mp->lib->full_name);
-			}
-
-			for(pt = mp->lib->params; pt != NULL; pt = pt->child ) {
-				fprintf(fp, "command %s %sParams.get_%s() {\n",
-						type_name(pt->type), 
-						mp->lib->full_name, 
-						pt->name);
-				fprintf(fp, "\tstruct %s_params_ptr *params = (struct %s_params_ptr*) (call Fennec.getConfParams(%d)).network;\n", 
-							mp->lib->full_name, 
-							mp->lib->full_name, 
-							mp->id);
-				fprintf(fp, "\treturn *(params->%s);\n", pt->name);
-				fprintf(fp, "}\n\n");
-				fprintf(fp, "command error_t %sParams.set_%s(%s new_%s) {\n",
-						mp->lib->full_name, 
-						pt->name, 
-						type_name(pt->type), 
-						pt->name);
-				fprintf(fp, "\tstruct %s_params_ptr *params = (struct %s_params_ptr*) (call Fennec.getConfParams(%d)).network;\n", 
-							mp->lib->full_name, 
-							mp->lib->full_name, 
-							mp->id);
-
-				fprintf(fp, "\t*params->%s = new_%s;\n", 
-						pt->name,
-						pt->name);
-				fprintf(fp, "\treturn SUCCESS;\n");
-		                fprintf(fp, "}\n\n");
-		        }
-
-
-			fprintf(fp, "event void %sNetworkAMSend.sendDone(message_t *msg, error_t error) {\n", mp->lib->full_name);
-			fprintf(fp, "\tsendDone(%d, F_APPLICATION, msg, error);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "event message_t* %sNetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn receive(%d, F_APPLICATION, msg, payload, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "event message_t* %sNetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn snoop(%d, F_APPLICATION, msg, payload, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command error_t %sMacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMSend_send(%d, F_MAC, addr, msg, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command error_t %sMacAMSend.cancel(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMSend_cancel(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command uint8_t %sMacAMSend.maxPayloadLength() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMSend_maxPayloadLength(%d, F_MAC);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void* %sMacAMSend.getPayload(message_t* msg, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMSend_getPayload(%d, F_MAC, msg, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command am_addr_t %sMacAMPacket.address() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_address(%d, F_MAC);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command am_addr_t %sMacAMPacket.destination(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_destination(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command am_addr_t %sMacAMPacket.source(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_source(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n");
-			fprintf(fp, "command void %sMacAMPacket.setDestination(message_t* msg, am_addr_t addr) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_setDestination(%d, F_MAC, msg, addr);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void %sMacAMPacket.setSource(message_t* msg, am_addr_t addr) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_setSource(%d, F_MAC, msg, addr);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command bool %sMacAMPacket.isForMe(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_isForMe(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command am_id_t %sMacAMPacket.type(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_type(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void %sMacAMPacket.setType(message_t* msg, am_id_t t) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_setType(%d, F_MAC, msg, t);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command am_group_t %sMacAMPacket.group(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_group(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void %sMacAMPacket.setGroup(message_t* msg, am_group_t grp) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_setGroup(%d, F_MAC, msg, grp);\n", mp->id);
-			fprintf(fp, "}\n");
-			fprintf(fp, "command am_group_t %sMacAMPacket.localGroup() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn AMPacket_localGroup(%d, F_MAC);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void %sMacPacket.clear(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn Packet_clear(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command uint8_t %sMacPacket.payloadLength(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn Packet_payloadLength(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void %sMacPacket.setPayloadLength(message_t* msg, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn Packet_setPayloadLength(%d, F_MAC, msg, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command uint8_t %sMacPacket.maxPayloadLength() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn Packet_maxPayloadLength(%d, F_MAC);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void* %sMacPacket.getPayload(message_t* msg, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn Packet_getPayload(%d, F_MAC, msg, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sMacPacketAcknowledgements.requestAck( message_t* msg ) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn PacketAcknowledgements_requestAck(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sMacPacketAcknowledgements.noAck( message_t* msg ) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn PacketAcknowledgements_noAck(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command bool %sMacPacketAcknowledgements.wasAcked(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn PacketAcknowledgements_wasAcked(%d, F_MAC, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
+		/* check if the interface is empty, if it is add dummy call */
+		if (conftab[i].conf->app->lib->params == NULL) {
+			fprintf(fp, "command void %s_%s_Params.dummy() {}\n\b",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
 		}
-	}
+
+		for(pt = conftab[i].conf->app->lib->params; pt != NULL; pt = pt->child ) {
+			fprintf(fp, "command %s %s_%s_Params.get_%s() {\n",
+					type_name(pt->type), 
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name, 
+					pt->name);
+			fprintf(fp, "\treturn *(%s_ptr.%s);\n",
+					conftab[i].conf->app_id_name,
+					pt->name);
+			fprintf(fp, "}\n\n");
+
+			fprintf(fp, "command error_t %s_%s_Params.set_%s(%s new_%s) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name, 
+					pt->name, 
+					type_name(pt->type), 
+					pt->name);
+			fprintf(fp, "\t*(%s_ptr.%s) = new_%s;\n", 
+					conftab[i].conf->app_id_name,
+					pt->name,
+					pt->name);
+			fprintf(fp, "\treturn SUCCESS;\n");
+	                fprintf(fp, "}\n\n");
+	        }
+
+		fprintf(fp, "command error_t %s_%s_NetworkAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMSend.send()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMSend_send(%s, F_NETWORK, addr, msg, len);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command error_t %s_%s_NetworkAMSend.cancel(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMSend.cancel()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMSend_cancel(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command uint8_t %s_%s_NetworkAMSend.maxPayloadLength() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMSend.maxPayloadLength()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMSend_maxPayloadLength(%s, F_NETWORK);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command void* %s_%s_NetworkAMSend.getPayload(message_t* msg, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMSend.getPayload()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMSend_getPayload(%s, F_NETWORK, msg, len);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command am_addr_t %s_%s_NetworkAMPacket.address() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.address()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_address(%s, F_NETWORK);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command am_addr_t %s_%s_NetworkAMPacket.destination(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.destination()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_destination(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command am_addr_t %s_%s_NetworkAMPacket.source(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.source()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_source(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command void %s_%s_NetworkAMPacket.setDestination(message_t* msg, am_addr_t addr) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.setDestination()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_setDestination(%s, F_NETWORK, msg, addr);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command void %s_%s_NetworkAMPacket.setSource(message_t* msg, am_addr_t addr) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.setSource()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_setSource(%s, F_NETWORK, msg, addr);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command bool %s_%s_NetworkAMPacket.isForMe(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.isForMe()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_isForMe(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command am_id_t %s_%s_NetworkAMPacket.type(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.type()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_type(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command void %s_%s_NetworkAMPacket.setType(message_t* msg, am_id_t t) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.setType()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_setType(%s, F_NETWORK, msg, t);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command am_group_t %s_%s_NetworkAMPacket.group(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.group()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_group(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command void %s_%s_NetworkAMPacket.setGroup(message_t* msg, am_group_t grp) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.setGroup()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_setGroup(%s, F_NETWORK, msg, grp);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command am_group_t %s_%s_NetworkAMPacket.localGroup() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkAMPacket.localGroup()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn AMPacket_localGroup(%s, F_NETWORK);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command void %s_%s_NetworkPacket.clear(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkPacket.clear()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn Packet_clear(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command uint8_t %s_%s_NetworkPacket.payloadLength(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkPacket.payloadLength()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn Packet_payloadLength(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command void %s_%s_NetworkPacket.setPayloadLength(message_t* msg, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkPacket.setPayloadLength()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn Packet_setPayloadLength(%s, F_NETWORK, msg, len);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command uint8_t %s_%s_NetworkPacket.maxPayloadLength() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkPacket.maxPayloadLength()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn Packet_maxPayloadLength(%s, F_NETWORK);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "command void* %s_%s_NetworkPacket.getPayload(message_t* msg, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkPacket.getPayload()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn Packet_getPayload(%s, F_NETWORK, msg, len);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "async command error_t %s_%s_NetworkPacketAcknowledgements.requestAck( message_t* msg ) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkPacket.requestAck()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn PacketAcknowledgements_requestAck(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "async command error_t %s_%s_NetworkPacketAcknowledgements.noAck( message_t* msg ) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkPacket.noAck()\");\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn PacketAcknowledgements_noAck(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "async command bool %s_%s_NetworkPacketAcknowledgements.wasAcked(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\tdbg(\"FennecEngine\", \"FennecEngineP call %s_%s_NetworkPacket.wasAcked()\");\n",	
+					conftab[i].conf->id->name,
+					conftab[i].conf->app->lib->name);
+		fprintf(fp, "\treturn PacketAcknowledgements_wasAcked(%s, F_NETWORK, msg);\n",
+					conftab[i].conf->app_id_name);
+		fprintf(fp, "}\n\n");
+
+
+
+
+		fprintf(fp, "event void %s_%s_Control.startDone(error_t err) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\tmodule_startDone(%s, err);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "event void %s_%s_Control.stopDone(error_t err) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\tmodule_stopDone(%s, err);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "\t/* Parameter Interfaces */\n\n");	
+
+		/* check if the interface is empty, if it is add dummy call */
+		if (conftab[i].conf->net->lib->params == NULL) {
+			fprintf(fp, "command void %s_%s_Params.dummy() {}\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		}
+
+		for(pt = conftab[i].conf->net->lib->params; pt != NULL; pt = pt->child ) {
+			fprintf(fp, "command %s %s_%s_Params.get_%s() {\n",
+					type_name(pt->type), 
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name, 
+					pt->name);
+			fprintf(fp, "\treturn *(%s_ptr.%s);\n",
+					conftab[i].conf->net_id_name,
+					pt->name);
+			fprintf(fp, "}\n\n");
+			fprintf(fp, "command error_t %s_%s_Params.set_%s(%s new_%s) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name, 
+					pt->name, 
+					type_name(pt->type), 
+					pt->name);
+			fprintf(fp, "\t*(%s_ptr.%s) = new_%s;\n", 
+					conftab[i].conf->net_id_name,
+					pt->name,
+					pt->name);
+			fprintf(fp, "\treturn SUCCESS;\n");
+	                fprintf(fp, "}\n\n");
+	        }
+
+
+		fprintf(fp, "event void %s_%s_NetworkAMSend.sendDone(message_t *msg, error_t error) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\tsendDone(%s, F_APPLICATION, msg, error);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "event message_t* %s_%s_NetworkReceive.receive(message_t *msg, void* payload, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn receive(%s, F_APPLICATION, msg, payload, len);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "event message_t* %s_%s_NetworkSnoop.receive(message_t *msg, void* payload, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn snoop(%s, F_APPLICATION, msg, payload, len);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command error_t %s_%s_MacAMSend.send(am_addr_t addr, message_t* msg, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMSend_send(%s, F_MAC, addr, msg, len);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command error_t %s_%s_MacAMSend.cancel(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMSend_cancel(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command uint8_t %s_%s_MacAMSend.maxPayloadLength() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMSend_maxPayloadLength(%s, F_MAC);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command void* %s_%s_MacAMSend.getPayload(message_t* msg, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMSend_getPayload(%s, F_MAC, msg, len);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command am_addr_t %s_%s_MacAMPacket.address() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_address(%s, F_MAC);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command am_addr_t %s_%s_MacAMPacket.destination(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_destination(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command am_addr_t %s_%s_MacAMPacket.source(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_source(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n");
+		fprintf(fp, "command void %s_%s_MacAMPacket.setDestination(message_t* msg, am_addr_t addr) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_setDestination(%s, F_MAC, msg, addr);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command void %s_%s_MacAMPacket.setSource(message_t* msg, am_addr_t addr) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_setSource(%s, F_MAC, msg, addr);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command bool %s_%s_MacAMPacket.isForMe(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_isForMe(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command am_id_t %s_%s_MacAMPacket.type(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_type(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command void %s_%s_MacAMPacket.setType(message_t* msg, am_id_t t) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_setType(%s, F_MAC, msg, t);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command am_group_t %s_%s_MacAMPacket.group(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_group(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command void %s_%s_MacAMPacket.setGroup(message_t* msg, am_group_t grp) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_setGroup(%s, F_MAC, msg, grp);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n");
+		fprintf(fp, "command am_group_t %s_%s_MacAMPacket.localGroup() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn AMPacket_localGroup(%s, F_MAC);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command void %s_%s_MacPacket.clear(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn Packet_clear(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command uint8_t %s_%s_MacPacket.payloadLength(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn Packet_payloadLength(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command void %s_%s_MacPacket.setPayloadLength(message_t* msg, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn Packet_setPayloadLength(%s, F_MAC, msg, len);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command uint8_t %s_%s_MacPacket.maxPayloadLength() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn Packet_maxPayloadLength(%s, F_MAC);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command void* %s_%s_MacPacket.getPayload(message_t* msg, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn Packet_getPayload(%s, F_MAC, msg, len);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command error_t %s_%s_MacPacketAcknowledgements.requestAck( message_t* msg ) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn PacketAcknowledgements_requestAck(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command error_t %s_%s_MacPacketAcknowledgements.noAck( message_t* msg ) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn PacketAcknowledgements_noAck(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command bool %s_%s_MacPacketAcknowledgements.wasAcked(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn PacketAcknowledgements_wasAcked(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command bool %s_%s_MacLinkPacketMetadata.highChannelQuality(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name);
+		fprintf(fp, "\treturn LinkPacketMetadata_highChannelQuality(%s, F_MAC, msg);\n",
+					conftab[i].conf->net_id_name);
+		fprintf(fp, "}\n\n");
+
 
 /* Interfaces with Macs */
 
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_MAC) {
-			fprintf(fp, "event void %sControl.startDone(error_t err) {\n", mp->lib->full_name);
-			fprintf(fp, "\tmodule_startDone(%d, err);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "event void %sControl.stopDone(error_t err) {\n", mp->lib->full_name);
-			fprintf(fp, "\tmodule_stopDone(%d, err);\n", mp->id);
-			fprintf(fp, "}\n\n");
 
 
-			fprintf(fp, "\t/* Parameter Interfaces */\n\n");	
-
-			/* check if the interface is empty, if it is add dummy call */
-			if (mp->lib->params == NULL) {
-				fprintf(fp, "command void %sParams.dummy() {}\n", mp->lib->full_name);
-			}
-
-			for(pt = mp->lib->params; pt != NULL; pt = pt->child ) {
-				fprintf(fp, "command %s %sParams.get_%s() {\n",
-						type_name(pt->type), 
-						mp->lib->full_name, 
-						pt->name);
-				fprintf(fp, "\tstruct %s_params_ptr *params = (struct %s_params_ptr*) (call Fennec.getConfParams(%d)).mac;\n", 
-							mp->lib->full_name, 
-							mp->lib->full_name, 
-							mp->id);
-				fprintf(fp, "\treturn *(params->%s);\n", pt->name);
-				fprintf(fp, "}\n\n");
-				fprintf(fp, "command error_t %sParams.set_%s(%s new_%s) {\n",
-						mp->lib->full_name, 
-						pt->name, 
-						type_name(pt->type), 
-						pt->name);
-				fprintf(fp, "\tstruct %s_params_ptr *params = (struct %s_params_ptr*) (call Fennec.getConfParams(%d)).mac;\n", 
-							mp->lib->full_name, 
-							mp->lib->full_name, 
-							mp->id);
-				fprintf(fp, "\t*params->%s = new_%s;\n", 
-						pt->name,
-						pt->name);
-				fprintf(fp, "\treturn SUCCESS;\n");
-		                fprintf(fp, "}\n\n");
-		        }
+		fprintf(fp, "event void %s_%s_Control.startDone(error_t err) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\tmodule_startDone(%s, err);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "event void %s_%s_Control.stopDone(error_t err) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\tmodule_stopDone(%s, err);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
 
 
-			fprintf(fp, "event void %sMacAMSend.sendDone(message_t *msg, error_t error) {\n", mp->lib->full_name);
-			fprintf(fp, "\tsendDone(%d, F_NETWORK, msg, error);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "event message_t* %sMacReceive.receive(message_t *msg, void* payload, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn receive(%d, F_NETWORK, msg, payload, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "event message_t* %sMacSnoop.receive(message_t *msg, void* payload, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn snoop(%d, F_NETWORK, msg, payload, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
+		fprintf(fp, "\t/* Parameter Interfaces */\n\n");	
 
-			fprintf(fp, "command error_t %sRadioConfig.sync() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_sync(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command uint8_t %sRadioConfig.getChannel() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_getChannel(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void %sRadioConfig.setChannel(uint8_t channel) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_setChannel(%d, F_RADIO, channel);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command uint16_t %sRadioConfig.getShortAddr() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_getShortAddr(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void %sRadioConfig.setShortAddr(uint16_t address) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_setShortAddr(%d, F_RADIO, address);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command uint16_t %sRadioConfig.getPanAddr() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_getPanAddr(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void %sRadioConfig.setPanAddr(uint16_t address) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_setPanAddr(%d, F_RADIO, address);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void %sRadioConfig.setAddressRecognition(bool enableAddressRecognition, bool useHwAddressRecognition) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_setAddressRecognition(%d, F_RADIO, enableAddressRecognition, useHwAddressRecognition);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command bool %sRadioConfig.isAddressRecognitionEnabled() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_isAddressRecognitionEnabled(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command bool %sRadioConfig.isHwAddressRecognitionDefault() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_isHwAddressRecognitionDefault(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command void %sRadioConfig.setAutoAck(bool enableAutoAck, bool hwAutoAck) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_setAutoAck(%d, F_RADIO, enableAutoAck, hwAutoAck);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command bool %sRadioConfig.isAutoAckEnabled() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_isAutoAckEnabled(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command bool %sRadioConfig.isHwAutoAckDefault() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioConfig_isHwAutoAckDefault(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-
-			fprintf(fp, "async command error_t %sRadioPower.startVReg() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioPower_startVReg(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sRadioPower.stopVReg() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioPower_stopVReg(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sRadioPower.startOscillator() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioPower_startOscillator(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sRadioPower.stopOscillator() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioPower_stopOscillator(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sRadioPower.rxOn() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioPower_rxOn(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sRadioPower.rfOff() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioPower_rfOff(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command error_t %sReadRssi.read() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn ReadRssi_read(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "async command error_t %sRadioResource.request() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioResource_request(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sRadioResource.immediateRequest() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioResource_immediateRequest(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sRadioResource.release() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioResource_release(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sRadioResource.isOwner() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioResource_isOwner(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "command error_t %sRadioControl.start() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioControl_start(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "command error_t %sRadioControl.stop() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioControl_stop(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "async command error_t %sRadioSend.cancel(message_t *msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioSend_cancel(%d, F_RADIO, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command error_t %sRadioSend.send(message_t* msg, bool useCca) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioSend_send(%d, F_RADIO, msg, useCca);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command uint8_t %sRadioPacket.maxPayloadLength() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioPacket_maxPayloadLength(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command void* %sRadioPacket.getPayload(message_t* msg, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioPacket_getPayload(%d, F_RADIO, msg, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "async command error_t %sRadioBuffer.load(message_t* msg) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn RadioBuffer_load(%d, F_RADIO, msg);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "async command bool %sPacketIndicator.isReceiving() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn PacketIndicator_isReceiving(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command bool %sEnergyIndicator.isReceiving() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn EnergyIndicator_isReceiving(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async command bool %sByteIndicator.isReceiving() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn ByteIndicator_isReceiving(%d, F_RADIO);\n", mp->id);
-			fprintf(fp, "}\n\n");
+		/* check if the interface is empty, if it is add dummy call */
+		if (conftab[i].conf->mac->lib->params == NULL) {
+			fprintf(fp, "command void %s_%s_Params.dummy() {}\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
 		}
-	}
+
+		for(pt = conftab[i].conf->mac->lib->params; pt != NULL; pt = pt->child ) {
+			fprintf(fp, "command %s %s_%s_Params.get_%s() {\n",
+					type_name(pt->type), 
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					pt->name);
+			fprintf(fp, "\treturn *(%s_ptr.%s);\n",
+					conftab[i].conf->mac_id_name,
+					pt->name);
+			fprintf(fp, "}\n\n");
+			fprintf(fp, "command error_t %s_%s_Params.set_%s(%s new_%s) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name, 
+					pt->name, 
+					type_name(pt->type), 
+					pt->name);
+			fprintf(fp, "\t*(%s_ptr.%s) = new_%s;\n", 
+					conftab[i].conf->mac_id_name,
+					pt->name,
+					pt->name);
+			fprintf(fp, "\treturn SUCCESS;\n");
+	                fprintf(fp, "}\n\n");
+	        }
+
+
+		fprintf(fp, "event void %s_%s_MacAMSend.sendDone(message_t *msg, error_t error) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\tsendDone(%s, F_NETWORK, msg, error);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "event message_t* %s_%s_MacReceive.receive(message_t *msg, void* payload, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn receive(%s, F_NETWORK, msg, payload, len);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "event message_t* %s_%s_MacSnoop.receive(message_t *msg, void* payload, uint8_t len) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn snoop(%s, F_NETWORK, msg, payload, len);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "async command error_t %s_%s_RadioResource.request() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioResource_request(%s, F_RADIO);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command error_t %s_%s_RadioResource.immediateRequest() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioResource_immediateRequest(%s, F_RADIO);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command error_t %s_%s_RadioResource.release() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioResource_release(%s, F_RADIO);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command error_t %s_%s_RadioResource.isOwner() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioResource_isOwner(%s, F_RADIO);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "async command error_t %s_%s_RadioSend.send(message_t* msg, bool useCca) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioSend_send(%s, F_RADIO, msg, useCca);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "async command uint8_t %s_%s_RadioPacket.maxPayloadLength() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioPacket_maxPayloadLength(%s, F_RADIO);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command uint8_t %s_%s_RadioPacket.headerLength(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioPacket_headerLength(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command uint8_t %s_%s_RadioPacket.payloadLength(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioPacket_payloadLength(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command void %s_%s_RadioPacket.setPayloadLength(message_t* msg, uint8_t length) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioPacket_setPayloadLength(%s, F_RADIO, msg, length);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command uint8_t %s_%s_RadioPacket.metadataLength(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioPacket_metadataLength(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command void %s_%s_RadioPacket.clear(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioPacket_clear(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "async command error_t %s_%s_RadioBuffer.load(message_t* msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioBuffer_load(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "async command bool %s_%s_PacketTransmitPower.isSet(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketTransmitPower_isSet(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command uint8_t %s_%s_PacketTransmitPower.get(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketTransmitPower_get(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command void %s_%s_PacketTransmitPower.clear(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketTransmitPower_clear(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command void %s_%s_PacketTransmitPower.set(message_t *msg, uint8_t value) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketTransmitPower_set(%s, F_RADIO, msg, value);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "async command bool %s_%s_PacketRSSI.isSet(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketRSSI_isSet(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command uint8_t %s_%s_PacketRSSI.get(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketRSSI_get(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command void %s_%s_PacketRSSI.clear(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketRSSI_clear(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command void %s_%s_PacketRSSI.set(message_t *msg, uint8_t value) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketRSSI_set(%s, F_RADIO, msg, value);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "async command bool %s_%s_PacketTimeSync.isSet(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketTimeSync_isSet(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command uint32_t %s_%s_PacketTimeSync.get(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketTimeSync_get(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command void %s_%s_PacketTimeSync.clear(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketTimeSync_clear(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command void %s_%s_PacketTimeSync.set(message_t *msg, uint32_t value) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketTimeSync_set(%s, F_RADIO, msg, value);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "async command bool %s_%s_PacketLinkQuality.isSet(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketLinkQuality_isSet(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command uint8_t %s_%s_PacketLinkQuality.get(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketLinkQuality_get(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command void %s_%s_PacketLinkQuality.clear(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketLinkQuality_clear(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command void %s_%s_PacketLinkQuality.set(message_t *msg, uint8_t value) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn PacketLinkQuality_set(%s, F_RADIO, msg, value);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "async command error_t %s_%s_RadioCCA.request() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioCCA_request(%s, F_RADIO);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "command error_t %s_%s_RadioState.turnOff() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioState_turnOff(%s, F_RADIO);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command error_t %s_%s_RadioState.standby() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioState_standby(%s, F_RADIO);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command error_t %s_%s_RadioState.turnOn() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioState_turnOn(%s, F_RADIO);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command error_t %s_%s_RadioState.setChannel(uint8_t channel) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioState_setChannel(%s, F_RADIO, channel);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "command uint8_t %s_%s_RadioState.getChannel() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn RadioState_getChannel(%s, F_RADIO);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async command bool %s_%s_RadioLinkPacketMetadata.highChannelQuality(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->mac->lib->name);
+		fprintf(fp, "\treturn LinkPacketMetadata_highChannelQuality(%s, F_RADIO, msg);\n",
+					conftab[i].conf->mac_id_name);
+		fprintf(fp, "}\n\n");
+	
+
+
 
 /* Interfaces with Radios */
 
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->id > 0 && mp->lib->type == TYPE_RADIO) {
-			fprintf(fp, "event void %sControl.startDone(error_t err) {\n", mp->lib->full_name);
-			fprintf(fp, "\tmodule_startDone(%d, err);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "event void %sControl.stopDone(error_t err) {\n", mp->lib->full_name);
-			fprintf(fp, "\tmodule_stopDone(%d, err);\n", mp->id);
-			fprintf(fp, "}\n\n");
+		fprintf(fp, "event void %s_%s_Control.startDone(error_t err) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\tmodule_startDone(%s, err);\n",
+					conftab[i].conf->radio_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "event void %s_%s_Control.stopDone(error_t err) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\tmodule_stopDone(%s, err);\n",
+					conftab[i].conf->radio_id_name);
+		fprintf(fp, "}\n\n");
 
 
-			fprintf(fp, "\t/* Parameter Interfaces */\n\n");	
+		fprintf(fp, "\t/* Parameter Interfaces */\n\n");	
 
-			/* check if the interface is empty, if it is add dummy call */
-			if (mp->lib->params == NULL) {
-				fprintf(fp, "command void %sParams.dummy() {}\n", mp->lib->full_name);
-			}
-
-			for(pt = mp->lib->params; pt != NULL; pt = pt->child ) {
-				fprintf(fp, "command %s %sParams.get_%s() {\n",
-						type_name(pt->type), 
-						mp->lib->full_name, 
-						pt->name);
-				fprintf(fp, "\tstruct %s_params_ptr *params = (struct %s_params_ptr*) (call Fennec.getConfParams(%d)).radio;\n", 
-							mp->lib->full_name, 
-							mp->lib->full_name, 
-							mp->id);
-				fprintf(fp, "\treturn *(params->%s);\n", pt->name);
-				fprintf(fp, "}\n\n");
-				fprintf(fp, "command error_t %sParams.set_%s(%s new_%s) {\n",
-						mp->lib->full_name, 
-						pt->name, 
-						type_name(pt->type), 
-						pt->name);
-				fprintf(fp, "\tstruct %s_params_ptr *params = (struct %s_params_ptr*) (call Fennec.getConfParams(%d)).radio;\n", 
-							mp->lib->full_name, 
-							mp->lib->full_name, 
-							mp->id);
-				fprintf(fp, "\t*params->%s = new_%s;\n", 
-						pt->name,
-						pt->name);
-				fprintf(fp, "\treturn SUCCESS;\n");
-		                fprintf(fp, "}\n\n");
-		        }
-
-
-			fprintf(fp, "event message_t* %sRadioReceive.receive(message_t *msg, void* payload, uint8_t len) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn receive(%d, F_MAC, msg, payload, len);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "event void %sRadioConfig.syncDone(error_t error) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn syncDone(%d, F_MAC, error);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "async event void %sRadioPower.startVRegDone() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn startVRegDone(%d, F_MAC);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async event void %sRadioPower.startOscillatorDone() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn startOscillatorDone(%d, F_MAC);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "event void %sReadRssi.readDone(error_t error, uint16_t rssi) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn readRssiDone(%d, F_MAC, error, rssi);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "event void %sRadioResource.granted() {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn granted(%d, F_MAC);\n", mp->id);
-			fprintf(fp, "}\n\n");
-
-			fprintf(fp, "async event void %sRadioBuffer.loadDone(message_t* msg, error_t error) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn transmitLoadDone(%d, F_MAC, msg, error);\n", mp->id);
-			fprintf(fp, "}\n\n");
-			fprintf(fp, "async event void %sRadioSend.sendDone(message_t *msg, error_t error) {\n", mp->lib->full_name);
-			fprintf(fp, "\treturn transmitSendDone(%d, F_MAC, msg, error);\n", mp->id);
-			fprintf(fp, "}\n\n");
+		/* check if the interface is empty, if it is add dummy call */
+		if (conftab[i].conf->radio->lib->params == NULL) {
+			fprintf(fp, "command void %s_%s_Params.dummy() {}\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
 		}
+
+		for(pt = conftab[i].conf->radio->lib->params; pt != NULL; pt = pt->child ) {
+			fprintf(fp, "command %s %s_%s_Params.get_%s() {\n",
+					type_name(pt->type), 
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					pt->name);
+			fprintf(fp, "\treturn *(%s_ptr.%s);\n",
+					conftab[i].conf->radio_id_name,
+					pt->name);
+			fprintf(fp, "}\n\n");
+			fprintf(fp, "command error_t %s_%s_Params.set_%s(%s new_%s) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name, 
+					pt->name, 
+					type_name(pt->type), 
+					pt->name);
+			fprintf(fp, "\t*(%s_ptr.%s) = new_%s;\n", 
+					conftab[i].conf->radio_id_name,
+					pt->name,
+					pt->name);
+			fprintf(fp, "\treturn SUCCESS;\n");
+	                fprintf(fp, "}\n\n");
+	        }
+
+		fprintf(fp, "async event message_t* %s_%s_RadioReceive.receive(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\treturn RadioReceive_receive(%s, F_MAC, msg);\n",
+					conftab[i].conf->radio_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "async event bool %s_%s_RadioReceive.header(message_t *msg) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\treturn RadioReceive_header(%s, F_MAC, msg);\n",
+					conftab[i].conf->radio_id_name);
+		fprintf(fp, "}\n\n");
+
+
+		fprintf(fp, "event void %s_%s_RadioResource.granted() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\treturn granted(%s, F_MAC);\n",
+					conftab[i].conf->radio_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "async event void %s_%s_RadioBuffer.loadDone(message_t* msg, error_t error) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\treturn transmitLoadDone(%s, F_MAC, msg, error);\n",
+					conftab[i].conf->radio_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "async event void %s_%s_RadioSend.sendDone(message_t *msg, error_t error) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\treturn RadioSend_sendDone(%s, F_MAC, msg, error);\n",
+					conftab[i].conf->radio_id_name);
+		fprintf(fp, "}\n\n");
+		fprintf(fp, "async event void %s_%s_RadioSend.ready() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\treturn RadioSend_ready(%s, F_MAC);\n",
+					conftab[i].conf->radio_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "event void %s_%s_RadioState.done() {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\treturn RadioState_done(%s, F_MAC);\n",
+					conftab[i].conf->radio_id_name);
+		fprintf(fp, "}\n\n");
+
+		fprintf(fp, "async event void %s_%s_RadioCCA.done(error_t error) {\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->radio->lib->name);
+		fprintf(fp, "\treturn RadioCCA_done(%s, F_MAC, error);\n",
+					conftab[i].conf->radio_id_name);
+		fprintf(fp, "}\n\n");
 	}
 
 	fprintf(fp, "\n}\n");

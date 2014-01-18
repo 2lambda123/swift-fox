@@ -1,0 +1,6 @@
+configuration test { dbgs() nullNet() nullMac() nullRadio() }
+
+state single { test }
+
+start single
+

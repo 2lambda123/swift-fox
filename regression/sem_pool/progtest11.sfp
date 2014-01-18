@@ -1,3 +1,0 @@
-# Testing erroneous semantic definition (undeclared MAC)
-configuration hello { test_blink() nullNet() undeclared_mac() nullRadio() }
-start hello

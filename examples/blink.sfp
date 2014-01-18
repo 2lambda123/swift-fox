@@ -1,0 +1,9 @@
+configuration hello { 
+		blink(1, 500)
+		nullNet()
+		nullMac()
+		nullRadio() }
+
+state simple { hello }
+
+start simple

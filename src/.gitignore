@@ -1,4 +1,1 @@
-*.tar.gz
-parser.c
-parser.h
-scanner.c
+*.o

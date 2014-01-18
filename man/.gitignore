@@ -1,0 +1,13 @@
+Makefile.in
+aclocal.m4
+autom4te.cache/
+configure
+depcomp
+install-sh
+missing
+ylwrap
+*.tar.gz
+Makefile
+config.log
+config.status
+

@@ -1,5 +1,0 @@
-
-sfc in program parse_pool/progtest12.sfp
-syntax error at line 5, position 19:
-from any goto foo bar
-                  ^

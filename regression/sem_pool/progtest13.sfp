@@ -1,3 +1,0 @@
-# Testing erroneous semantic definition (missing module parameters)
-configuration hello { test_blink() nullNet() nullMac() nullRadio() }
-start hello

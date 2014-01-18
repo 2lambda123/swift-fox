@@ -1,4 +1,0 @@
-# Testing erroneous program definition (invalid MAC)
-configuration hello { nullApp() nullNet() start() nullRadio() } 
-start hello
-

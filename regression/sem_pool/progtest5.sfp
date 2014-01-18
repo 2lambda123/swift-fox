@@ -1,3 +1,0 @@
-# Testing erroneous semantic definition (undeclared application)
-configuration hello { foo() nullNet() nullMac() nullRadio() }
-start hello

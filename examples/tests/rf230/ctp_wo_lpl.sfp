@@ -1,0 +1,17 @@
+uint16_t dest_node = 75
+uint16_t src_node = 0xFFFF
+
+configuration count { counter(50, 1024, src_node, dest_node) 
+			#nullNet()
+			ctp(dest_node)
+                        csmaca(dest_node, 0, 10, 10, 1, 1, 1)
+                        # always ON, delay_after_receive, backoff, min_backoff
+                        # ack, cca, crc
+                        rf230()
+                        # channel, power, ack, crc
+			}
+
+state test { count }
+
+start test
+

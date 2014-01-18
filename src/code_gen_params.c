@@ -20,7 +20,7 @@
 #include "utils.h"
 
 void module_params_interface_app(struct modtab *mp) {
-	char *full_path = get_sfc_path(mp->lib->full_name, "Params.nc");
+	char *full_path = get_sfc_path(mp->lib->name, "Params.nc");
 	FILE *fp = fopen(full_path, "w");
 	struct paramtype *pt;
 
@@ -30,7 +30,7 @@ void module_params_interface_app(struct modtab *mp) {
 		exit(1);
 	}
 
-	fprintf(fp, "interface %sParams {\n", (mp->lib->full_name));
+	fprintf(fp, "interface %sParams {\n", (mp->lib->name));
 //	fprintf(fp, "\tevent void receive_status(uint16_t status_flag);\n");
 //	fprintf(fp, "\tcommand void send_status(uint16_t status_flag);\n");
 
@@ -59,7 +59,7 @@ void module_params_interface_app(struct modtab *mp) {
 
 
 void module_params_h(struct modtab *mp) {
-	char *full_path = get_sfc_path(mp->lib->full_name, "Params.h");
+	char *full_path = get_sfc_path(mp->lib->name, "Params.h");
 	FILE *fp = fopen(full_path, "w");
 	struct paramtype *pt;
 
@@ -69,15 +69,10 @@ void module_params_h(struct modtab *mp) {
 		exit(1);
 	}
 
-	fprintf(fp, "#ifndef _FF_MODULE_%s_H_\n", mp->lib->full_name);
-	fprintf(fp, "#define _FF_MODULE_%s_H_\n\n", mp->lib->full_name);
+	fprintf(fp, "#ifndef _FF_MODULE_%s_H_\n", mp->lib->name);
+	fprintf(fp, "#define _FF_MODULE_%s_H_\n\n", mp->lib->name);
 
-//	for(pt = mp->lib->params; pt != NULL; pt = pt->child) {
-//        	fprintf(fp, "%s %s_%s;\n", type_name(pt->type), mp->lib->full_name, pt->name);
-//	}
-//	fprintf(fp, "\n");
-
-	fprintf(fp, "struct %s_params {\n", mp->lib->full_name);
+	fprintf(fp, "struct %s_params {\n", mp->lib->name);
 
 	for(pt = mp->lib->params; pt != NULL; pt = pt->child) {
 		fprintf(fp, "\t%s %s;\n", type_name(pt->type), pt->name);
@@ -85,17 +80,13 @@ void module_params_h(struct modtab *mp) {
 
 	fprintf(fp, "};\n\n");
 
-	fprintf(fp, "struct %s_params_ptr {\n", mp->lib->full_name);
+	fprintf(fp, "struct %s_params_ptr {\n", mp->lib->name);
 
 	for(pt = mp->lib->params; pt != NULL; pt = pt->child) {
 		fprintf(fp, "\t%s *%s;\n", type_name(pt->type), pt->name);
 	}
 
 	fprintf(fp, "};\n\n");
-
-
-
-	//fprintf(fp, "struct %s_params %s_data;\n", mp->lib->full_name, mp->lib->full_name);
 
 	fprintf(fp, "#endif\n");
 
@@ -104,12 +95,16 @@ void module_params_h(struct modtab *mp) {
 }
 
 void generateParams() {
-	struct modtab *mp;
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if ((mp->lib != NULL) && (mp->lib->path) && (mp->id > 0) && (mp->lib->used == 1)) {
-			module_params_interface_app(mp);
-			module_params_h(mp);
-		}
+	int i;
+	for( i = 0; i < conf_id_counter; i++ ) {
+		module_params_interface_app(conftab[i].conf->app);
+		module_params_h(conftab[i].conf->app);
+		module_params_interface_app(conftab[i].conf->net);
+		module_params_h(conftab[i].conf->net);
+		module_params_interface_app(conftab[i].conf->mac);
+		module_params_h(conftab[i].conf->mac);
+		module_params_interface_app(conftab[i].conf->radio);
+		module_params_h(conftab[i].conf->radio);
 	}
 }
 

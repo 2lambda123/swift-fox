@@ -1,8 +1,0 @@
-# Testing erroneous program definition (invalid or operator)
-configuration foo { nullApp() nullNet() nullMac() nullRadio() }
-event-condition bar { timer = 8192 TYPE_SECOND }
-
-from any goto foo when bar nor bar
-
-start foo
-

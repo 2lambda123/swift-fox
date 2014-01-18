@@ -1,0 +1,6 @@
+configuration test { printf() nullNet() nullMac() nullRadio() }
+
+state single { test }
+
+start single
+

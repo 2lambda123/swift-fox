@@ -1,5 +1,0 @@
-
-sfc in program parse_pool/progtest11.sfp
-syntax error at line 5, position 10:
-from any foo when bar
-         ^

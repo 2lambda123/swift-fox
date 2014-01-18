@@ -45,8 +45,6 @@ void endGlobalVariables();
 
 void finishCodeGeneration(int policy_counter);
 
-void generateConfiguration(struct confnode* c);
-
 void generateCaches(int event_counter, int policy_counter);
 
 void generateModules();

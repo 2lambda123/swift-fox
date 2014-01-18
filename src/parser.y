@@ -33,7 +33,6 @@ int policy_counter	= 0;
 FILE *fcode		= NULL;
 
 int state_id_counter	= 0;
-int module_id_counter 	= 1;
 int event_id_counter	= 0;
 int conf_id_counter	= 0;
 int state_defined	= 0;
@@ -259,7 +258,6 @@ configurations: configurations configuration
 
 configuration: configuration_type IDENTIFIER conf_level OPEN_BRACE newlines module newlines module newlines module newlines module newlines CLOSE_BRACE newlines
 		{
-
 			/* configuration node */
 			$$		= calloc(1, sizeof(struct confnode));
 
@@ -269,32 +267,6 @@ configuration: configuration_type IDENTIFIER conf_level OPEN_BRACE newlines modu
 	
 			/* level */
 			$$->level	= $3;
-
-			/* set ids */
-			
-			if ($6->id == 0) {
-				$6->id = module_id_counter;
-				//$6->conf = $$;
-				++module_id_counter;
-			}
-
-			if ($8->id == 0) {
-				$8->id = module_id_counter;
-				//$8->conf = $$;
-				++module_id_counter;
-			}
-
-			if ($10->id == 0) {
-				$10->id = module_id_counter;
-				//$10->conf = $$;
-				++module_id_counter;
-			}
-
-			if ($12->id == 0) {
-				$12->id = module_id_counter;
-				//$12->conf = $$;
-				++module_id_counter;
-			}
 
 			/* link application module */
 			if (($6 == NULL) || (($6->type != TYPE_APPLICATION && $6->type != TYPE_EVENT))) {
@@ -342,8 +314,17 @@ configuration: configuration_type IDENTIFIER conf_level OPEN_BRACE newlines modu
 				event_id_counter++;
 			}
 
+			$$->name = $2->name;
 
 			$$->counter	= conf_id_counter;
+			$$->app_id_value = conf_id_counter * F_LAYERS + F_APPLICATION; 	
+			$$->net_id_value = conf_id_counter * F_LAYERS + F_NETWORK; 	
+			$$->mac_id_value = conf_id_counter * F_LAYERS + F_MAC; 	
+			$$->radio_id_value = conf_id_counter * F_LAYERS + F_RADIO; 	
+			$$->app_id_name = conf_module_name($$->name, $$->app->lib->name);
+			$$->net_id_name = conf_module_name($$->name, $$->net->lib->name);
+			$$->mac_id_name = conf_module_name($$->name, $$->mac->lib->name);
+			$$->radio_id_name = conf_module_name($$->name, $$->radio->lib->name);
 
 			conftab[conf_id_counter].conf = $$;
 
@@ -634,7 +615,6 @@ definition: USE module_type IDENTIFIER PATH OPEN_PARENTHESIS newlines module_typ
 			
 			/* lookup */
 			struct symtab *sp = NULL;
-			char *full_name = NULL;
 		
 			/* check for library re-declarations */
 			if ((sp = symlook($3->name)) != NULL && sp->type != TYPE_UNKNOWN)
@@ -663,18 +643,12 @@ definition: USE module_type IDENTIFIER PATH OPEN_PARENTHESIS newlines module_typ
 			switch($3->type) {
 			case TYPE_APPLICATION:
 				/* application */
-			        full_name = malloc(strlen($4->name)+strlen("App")+1);
-			        sprintf(full_name, "%sApp", $4->name);
-				$4->full_name = full_name;
 				$4->type = TYPE_APPLICATION;
 				$4->used = 0;
 				$4->id = 0;
 				break;
 
 			case TYPE_EVENT:
-			        full_name = malloc(strlen($4->name)+strlen("App")+1);
-			        sprintf(full_name, "%sApp", $4->name);
-				$4->full_name = full_name;
 				$4->type = TYPE_EVENT;
 				$4->used = 0;
 				$4->id = 0;
@@ -682,9 +656,6 @@ definition: USE module_type IDENTIFIER PATH OPEN_PARENTHESIS newlines module_typ
 
 			case TYPE_NETWORK:
 				/* network */
-			        full_name = malloc(strlen($4->name)+strlen("Net")+1);
-			        sprintf(full_name, "%sNet", $4->name);
-				$4->full_name = full_name;
 				$4->type = TYPE_NETWORK;
 				$4->used = 0;
 				$4->id = 0;
@@ -692,9 +663,6 @@ definition: USE module_type IDENTIFIER PATH OPEN_PARENTHESIS newlines module_typ
 
 			case TYPE_MAC:
                                 /* mac */
-			        full_name = malloc(strlen($4->name)+strlen("Mac")+1);
-			        sprintf(full_name, "%sMac", $4->name);
-				$4->full_name = full_name;
                                 $4->type = TYPE_MAC;
 				$4->used = 0;
                                 $4->id = 0;
@@ -702,9 +670,6 @@ definition: USE module_type IDENTIFIER PATH OPEN_PARENTHESIS newlines module_typ
                         
 			case TYPE_RADIO:
                                 /* radio */
-			        full_name = malloc(strlen($4->name)+strlen("Radio")+1);
-			        sprintf(full_name, "%sRadio", $4->name);
-				$4->full_name = full_name;
                                 $4->type = TYPE_RADIO;
 				$4->used = 0;
                                 $4->id = 0;
@@ -1016,11 +981,10 @@ proc_module(char *s) {
         for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
                 /* is it free */
                 if(!mp->lib) {
-			mp->id = 0;
 			mp->type = sp->type;
 			mp->lib = sp->lib;
 			mp->params = NULL;
-			mp->name = strdup(sp->lib->full_name);
+			mp->name = strdup(sp->lib->name);
 			for(c = mp->name; *c != '\0'; c++ ) {
 				*c = toupper(*c);
 			}

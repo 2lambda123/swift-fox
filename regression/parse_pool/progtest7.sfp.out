@@ -1,5 +1,0 @@
-
-sfc in program parse_pool/progtest7.sfp
-syntax error at line 3, position 1:
-bar { timer = 8192 TYPE_SECOND }
-^
