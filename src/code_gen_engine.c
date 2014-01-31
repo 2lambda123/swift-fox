@@ -2049,7 +2049,7 @@ void generateFennecEngineP() {
 
 		/* check if the interface is empty, if it is add dummy call */
 		if (conftab[i].conf->app->lib->params == NULL) {
-			fprintf(fp, "command void %s_%s_Params.dummy() {}\n\b",
+			fprintf(fp, "command void %s_%s_Params.dummy() {}\n",
 					conftab[i].conf->id->name,
 					conftab[i].conf->app->lib->name);
 		}
