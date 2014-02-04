@@ -1,12 +1,14 @@
 swift-fox-dev
 =============
 
-<a href=>License</a>
+<a href="wiki/License">License</a>
 
 Swift Fox Development Code
 
 
 License
+
+
 
 Copyright (c) 2014, Columbia University.
 All rights reserved.
