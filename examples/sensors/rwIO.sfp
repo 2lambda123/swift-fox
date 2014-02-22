@@ -1,0 +1,11 @@
+
+configuration sensor { rwIO(1024, 2048) 
+			nullNet()
+			nullMac()
+			nullRadio()
+}
+
+state test { sensor }
+
+start test
+

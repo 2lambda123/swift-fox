@@ -99,7 +99,7 @@ any		{
 			yylval.symp = symlook(yytext);
 #endif
 			return ANY;			}
-(configuration|conf)	{
+(configuration|conf|proc|process)	{
 #ifndef __DEBUG__
 			tokenpos += yyleng;
 #endif

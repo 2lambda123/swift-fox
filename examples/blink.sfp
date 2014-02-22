@@ -1,8 +1,8 @@
 configuration hello { 
-		blink(1, 500)
-		nullNet()
-		nullMac()
-		nullRadio() }
+	blink(1, 500)
+	nullNet()
+	nullMac()
+	nullRadio2() }
 
 state simple { hello }
 
