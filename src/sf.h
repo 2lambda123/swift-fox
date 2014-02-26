@@ -111,9 +111,10 @@ extern char *conf_state_suffix;
 
 int start_parser(int argc, char *argv[]);
 
-int lineno;
+extern int yylineno;
+extern int yycolumn;
+
 char linebuf[BUF_SZ];
-int tokenpos;
 
 /**
 Symbol Table 

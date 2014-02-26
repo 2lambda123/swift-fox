@@ -47,9 +47,15 @@
 #define YY_NO_INPUT
 #endif
 
-%}
+/* handle locations */
+int yycolumn = 1;
 
+#define YY_USER_ACTION yycolumn += yyleng;
+
+
+%}
 %option nounput
+%option yylineno
 
 delim		[ \v\f\r]
 tab		\t+
@@ -57,7 +63,7 @@ whitespace	{delim}+
 letter		[A-Za-z]
 digit		[0-9]
 number		(-)*[1-9]{digit}*
-newline		\n.*
+newline		\n
 identifier	({letter}|_)({letter}|{digit}|_)*
 hex		0x([A-Fa-f]|{digit})+
 constant	{digit}|{number}|{hex}
@@ -67,187 +73,162 @@ comment		#.*
 
 %%
 
+
+^.* {
+			//yycolumn = 1;
+			(void)memset(linebuf, 0, BUF_SZ);
+			strncpy(linebuf, yytext, BUF_SZ - 1);  
+			yyless(0);
+			yycolumn = 1;
+}
+
 {newline}       {
 #ifndef __DEBUG__
-			(void)memset(linebuf, 0, BUF_SZ);
-			strncpy(linebuf, yytext + 1, BUF_SZ - 1); lineno++; 
-			tokenpos = 0; yyless(1);
-#else
-			yyless(1);
 #endif
-			return LF;    				}
+                        return LF;                              }
+
+
 {tab}		{
 #ifndef __DEBUG__
-			tokenpos += ((yyleng*5) + (yyleng - 1) * 3);
 #endif
 								}
 
 
 {whitespace}	{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 							}
 {comment}	{
 #ifndef __DEBUG__
-			tokenpos = 0; 		
 #endif
 							}
 any		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.symp = symlook(yytext);
 #endif
 			return ANY;			}
 (configuration|conf|proc|process)	{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return CONFIGURATION;		}
 ,		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return COMMA;			}
 
 state			{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return STATE;			}
 
 (event-condition|event)	{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return EVENT;			}
 from		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return FROM;			}
 goto		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return GOTO;			}
 
 
 start		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return START;			}
 
 (at|@)           {
 #ifndef __DEBUG__
-                        tokenpos += yyleng;
 #endif
                         return AT;                   }
 
 (level|l)           {
 #ifndef __DEBUG__
-                        tokenpos += yyleng;
 #endif
                         return LEVEL;                   }
 
 use		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return	USE;			}
 application	{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif	
 			return APPLICATION;		}
 network		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return NETWORK;			}
 mac         {
 #ifndef __DEBUG__
-                        tokenpos += yyleng;
 #endif
                         return MAC;                 }
 radio         {
 #ifndef __DEBUG__
-                        tokenpos += yyleng;
 #endif
                         return RADIO;                 }
 source		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return SOURCE;			}
 when		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return WHEN;			}
 and		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = AND; 
 #endif
 			return AND;			}
 or		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = OR; 
 #endif
 			return OR;			}
 "="		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = EQ;
 #endif
 			return RELOP;			}
 \{		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return OPEN_BRACE;		}
 \}		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 #endif
 			return CLOSE_BRACE;		}
 
 \(              {
 #ifndef __DEBUG__
-                        tokenpos += yyleng;
 #endif
                         return OPEN_PARENTHESIS;              }
 \)              {
 #ifndef __DEBUG__
-                        tokenpos += yyleng;
 #endif
 			return CLOSE_PARENTHESIS;		}
 
 
 "["              {
 #ifndef __DEBUG__
-                        tokenpos += yyleng;
 #endif
                         return OPEN_SQUARE_BRACE;              }
 "]"              {
 #ifndef __DEBUG__
-                        tokenpos += yyleng;
 #endif
                         return CLOSE_SQUARE_BRACE;               }
 
 uint8_t		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = TYPE_UINT8_T;
 #endif
 			return VARIABLE_TYPE;		}
 
 uint16_t	{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = TYPE_UINT16_T;
 #endif
 			return VARIABLE_TYPE;		}
@@ -255,21 +236,18 @@ uint16_t	{
 
 uint32_t	{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = TYPE_UINT32_T;
 #endif
 			return VARIABLE_TYPE;		}
 
 float		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = TYPE_FLOAT;
 #endif
 			return VARIABLE_TYPE;		}
 
 double		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = TYPE_DOUBLE;
 #endif
 			return VARIABLE_TYPE;		}
@@ -277,20 +255,17 @@ double		{
 
 int8_t         {
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = TYPE_INT8_T;
 #endif
 			return VARIABLE_TYPE;           }
 
 int16_t        {
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = TYPE_INT16_T;
 #endif
 			return VARIABLE_TYPE;           }
 int32_t	{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.ival = TYPE_INT32_T;
 #endif
 			return VARIABLE_TYPE;		}
@@ -299,20 +274,17 @@ int32_t	{
 
 {identifier}	{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.symp = symlook(yytext);
 #endif
 			return IDENTIFIER;		}
 
 {path}		{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.libp = liblook(yytext);
 #endif
 			return PATH;			}
 {constant}	{
 #ifndef __DEBUG__
-			tokenpos += yyleng;
 			yylval.dval = atof(yytext);
 #endif
 			return CONSTANT;		}

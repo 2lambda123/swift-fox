@@ -9,7 +9,10 @@ configuration red { blink(1, 1024)
 
 configuration yellow { blink(2, 1024)
 			nullNet() 
-			tdma(1, 30, 3000, 10, 10, 1, 1, 1)
+                        csmaca(1, 0, 10, 10, 1, 1, 1)
+                        	# always ON, delay_after_receive, backoff
+				# min_backoff, ack, cca, crc
+			#tdma(1, 30, 3000, 10, 10, 1, 1, 1)
                         cc2420(26, 31, 1, 1)
 				# channel, power, ack, crc
 }
