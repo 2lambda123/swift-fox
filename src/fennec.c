@@ -29,6 +29,7 @@
   * Swift Fox compiler
   *
   * @author: Marcin K Szczodrak
+  * @updated: February 27, 2014
   */
 
 
@@ -56,8 +57,16 @@ int main(int argc, char *argv[]) {
 	sprintf(buff, "%s/Fennec/sfc", fennec_fox_lib);
 
 	if (stat(buff, &s) == -1) {
-		perror(buff);
-                fprintf(stderr, "Swift Fox was not compiled!\n");
+		//perror(buff);
+		fprintf(stderr, "\nWelcome to Fennec Fox compiler\n");
+		fprintf(stderr, "There is no Swift Fox program compiled\n");
+		if ((argc > 1) && !strcmp("clean", argv[1])) {
+			fprintf(stderr, "Nothing to clean.\n\n");
+		} else {
+	                fprintf(stderr, "Please first compile a Swift Fox program\n");
+			fprintf(stderr, "ex:\n$ sfc <swift_fox_program_file>.sfp\n");
+			fprintf(stderr, "and then run\n$ fennec <platform_name>\n\n");
+		}
                 exit(1);
 	}
 
