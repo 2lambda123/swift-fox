@@ -21,38 +21,35 @@ configuration blinking {
 }
 
 configuration controller {
-			cuApp()
-#			nullApp()
-			cuNet()
-#			nullNet()
-			cuMac()
-#			nullMac()
+			StateSync()
+			nullNet()
+                        csmaca(dest_node, 0, 10, 10, 1, 1, 1)
 #			nullRadio()
 			cape()
 }
 
 
-event timerMonitor { 	
-			timerMilliE(3000, 0xFFFF)
-			#timerMilliE(3000, event_src)
-			nullNet()
-			nullMac()
-			nullRadio()
-}
+#event timerMonitor { 	
+#			timerMilliE(3000, 0xFFFF)
+#			#timerMilliE(3000, event_src)
+#			nullNet()
+#			nullMac()
+#			nullRadio()
+#}
 
-event timerMonitor2 { 	
-			timerMilliE(1000, 0xFFFF)
-			#timerMilliE(4000, event_src)
-			nullNet()
-			nullMac()
-			nullRadio()
-}
+#event timerMonitor2 { 	
+#			timerMilliE(1000, 0xFFFF)
+#			#timerMilliE(4000, event_src)
+#			nullNet()
+#			nullMac()
+#			nullRadio()
+#}
 
 state monitor { count  }
 state light { blinking }
 
-from monitor goto light when timerMonitor
-from light goto monitor when timerMonitor2
+#from monitor goto light when timerMonitor
+#from light goto monitor when timerMonitor2
 
 start monitor
 
