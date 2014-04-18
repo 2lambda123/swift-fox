@@ -80,7 +80,7 @@ void addGlobalVariable(struct variable *sh) {
 	}
 
 	sh->name->type = TYPE_VARIABLE_GLOBAL;
-	fprintf(fp, "%s %s[%d] = {%f};\n\n", type_name(sh->type), 
+	fprintf(fp, "%s %s[%d] = {%Lf};\n\n", type_name(sh->type), 
 						sh->name->name,
 						sh->length,
 						sh->value);

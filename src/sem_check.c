@@ -80,42 +80,48 @@ checkState(struct statenode *s) {
 	*/
 	
 	for (i = 0; i < state_id_counter; i++) {
-		//printf("0x%1x 0x%1x\n", statetab[i].state, s);
 		if ((statetab[i].state != s) && (statetab[i].state->id == s->id)) {
-			goto state_err;
+			/* redeclaration */
+			(void)fprintf(stderr, "error: redeclaration of state %s\n",
+				s->id->name);
+			/* terminate */
+			exit(1);
 		}
 	}
 
 
 	/* check if every configuration is defined */
-	for (i = 0; i < state_id_counter; i++) {
-		for (conf_ptr = statetab[i].state->confs; conf_ptr != NULL; conf_ptr = conf_ptr->confs) {
-			if (conf_ptr->conf->id->type == TYPE_UNKNOWN) {
-				goto undef_conf;
+	for (conf_ptr = s->confs; conf_ptr != NULL; conf_ptr = conf_ptr->confs) {
+		if (conf_ptr->conf->id->type == TYPE_UNKNOWN) {
+			/* undefined configuration */
+			(void)fprintf(stderr, "error: undefined configuration %s in state %s\n",
+				conf_ptr->conf->id->name, s->id->name);
+			/* terminate */
+			exit(1);
+		}
+	}
+
+	/* check number of dominant AM modules in the state */
+	for (conf_ptr = s->confs; conf_ptr != NULL; conf_ptr = conf_ptr->confs) {
+		int not_inferior = 0;
+		struct conf_ids *cp;
+		for(cp = conf_ptr; cp != NULL; cp = cp->confs) {
+			if (conf_ptr->conf->conf->am->lib == cp->conf->conf->am->lib) {
+				not_inferior += !(cp->conf->conf->am_inferior);
+			}
+
+			if (not_inferior > 1) {
+				/* ambigious match of AM in the state */
+				(void)fprintf(stderr, "error: too many dominant AM modules %s in the state %s\n",
+					conf_ptr->conf->conf->am->lib->name, s->id->name);
+				/* terminate */
+				exit(1);
 			}
 		}
 	}
 
-
 	/* OK, no problems found */
 	return;
-
-
-state_err:
-	/* redeclaration */
-	(void)fprintf(stderr, "error: redeclaration of state %s\n",
-			s->id->name);
-	/* terminate */
-	exit(1);
-
-
-
-undef_conf:
-	/* undefined configuration */
-	(void)fprintf(stderr, "error: undefined configuration %s in state %s\n",
-			conf_ptr->conf->id->name, statetab[i].state->id->name);
-	/* terminate */
-	exit(1);
 }
 
 
@@ -201,56 +207,28 @@ checkConfiguration(struct confnode* c) {
 	}
 	
 	/** 
-	check for undeclared mac 
+	check for undeclared am 
 	*/
-	if (c->mac == NULL || c->mac->type == TYPE_UNKNOWN || c->mac->lib == NULL)
-		goto mac_err;
+	if (c->am == NULL || c->am->type == TYPE_UNKNOWN || c->am->lib == NULL)
+		goto am_err;
 
-        /* check for undeclared mac */
-        if (c->mac->type == TYPE_KEYWORD) {
+        /* check for undeclared am */
+        if (c->am->type == TYPE_KEYWORD) {
                 /* loop */
                 found = 0;
                 for (sp = symtab; sp < &symtab[NSYMS]; sp++)
                         if (sp->name &&
-                                !strcmp(sp->name, c->mac->lib->def))
-                                if (sp->type && (sp->type == TYPE_MAC)) {
+                                !strcmp(sp->name, c->am->lib->def))
+                                if (sp->type && (sp->type == TYPE_AM)) {
                                         /* found */
                                         found = 1;
                                         break;
                                 }
 
-                /* undeclared mac */
+                /* undeclared am */
                 if (!found)
-                        goto mac_err;
+                        goto am_err;
         }
-
-	/** 
-	check for undeclared network 
-	*/
-	if (c->radio == NULL || c->radio->type == TYPE_UNKNOWN || c->radio->lib == NULL)
-		goto radio_err;
-
-        /* check for undeclared radio */
-        if (c->radio->type == TYPE_KEYWORD) {
-		if (c->radio->lib == NULL)
-			goto radio_err;
-
-                /* loop */
-                found = 0;
-                for (sp = symtab; sp < &symtab[NSYMS]; sp++)
-                        if (sp->name &&
-                                !strcmp(sp->name, c->radio->lib->def))
-                                if (sp->type && (sp->type == TYPE_RADIO)) {
-                                        /* found */
-                                        found = 1;
-                                        break;
-                                }
-
-                /* undeclared radio */
-                if (!found)
-                        goto radio_err;
-        }
-
 
 	/* check if states are defined */
 
@@ -281,15 +259,8 @@ net_err:
 	/* terminate */
 	exit(1);
 
-mac_err:
-	(void)fprintf(stderr, "error: undeclared mac in configuration %s\n",
-			c->id->name);
-
-        /* terminate */
-        exit(1);
-
-radio_err:
-	(void)fprintf(stderr, "error: undeclared radio in configuration %s\n",
+am_err:
+	(void)fprintf(stderr, "error: undeclared am in configuration %s\n",
 			c->id->name);
 
         /* terminate */
@@ -373,14 +344,9 @@ checkConfigurationModules(struct confnode *c) {
 	checkSingleModule(c, c->net, &(c->net_params), c->net->lib->params);
 
 	/** 
-	check mac module params 
+	check am module params 
 	*/
-	checkSingleModule(c, c->mac, &(c->mac_params), c->mac->lib->params);
-
-	/** 
-	check radio module params 
-	*/
-	checkSingleModule(c, c->radio, &(c->radio_params), c->radio->lib->params);
+	checkSingleModule(c, c->am, &(c->am_params), c->am->lib->params);
 }
 
 /** 
@@ -472,8 +438,6 @@ updateStatesWithEvents(struct policy *p) {
 				}
 				cids->confs = p->event_confs;
 			}
-			statetab[i].state->confs_counter = statetab[i].state->confs_counter + 
-						p->event_confs->count;
 		}
 	}	
 }
@@ -563,7 +527,6 @@ addConfState(struct confnode *c) {
 	ci->id = c->id;
 
 	/* create conf_ids with one conf_id */
-	cis->count = 1;
 	cis->confs = NULL;
 	cis->conf = ci;
 
@@ -572,9 +535,7 @@ addConfState(struct confnode *c) {
 	newstate->id = st;
 	newstate->level = UNKNOWN;
 	newstate->confs = cis;
-	newstate->confs_counter = 1;
 	newstate->counter = state_id_counter;
-	st->value = state_id_counter;
 	++state_id_counter;
 
 	statetab[newstate->counter].state = newstate;

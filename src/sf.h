@@ -52,8 +52,7 @@
 #define TYPE_APPLICATION	1
 #define TYPE_NETWORK		2
 #define TYPE_EVENT		3
-#define TYPE_MAC		5
-#define TYPE_RADIO		6
+#define TYPE_AM			4
 
 #define TYPE_TYPE		8
 
@@ -65,6 +64,7 @@
 #define TYPE_KEYWORD		14
 #define TYPE_VARIABLE_GLOBAL	15
 
+#define TYPE_BOOL		19
 #define TYPE_UINT8_T		20
 #define TYPE_UINT16_T		21
 #define TYPE_UINT32_T		22
@@ -88,13 +88,6 @@
 #define TEMP_DIR                "/tmp/swift_fox"
 
 #define STD_FENNEC_FOX_LIB	"support/sfc/fennec.sfl"
-
-#define F_APPLICATION		1
-#define F_NETWORK		2
-#define F_MAC			3
-#define F_RADIO			4
-#define F_LAYERS		4
-
 
 #define UNKNOWN			-1
 
@@ -131,7 +124,7 @@ struct symtab *symlook(char *);
 struct symtab *find_module_symtab(char *);
 
 struct defvalue {
-	double			def_value;
+	long double		def_value;
 	int 			def_valid;
 };
 
@@ -145,7 +138,7 @@ struct paramtype {
 struct paramvalue {
 	struct paramvalue	*child;	
 	struct symtab		*value;
-	double			num_value;
+	long double		num_value;
 };
 
 struct libtab {
@@ -173,6 +166,8 @@ struct evtab *evlook(char *);
 struct modtab {
 	char			*name;
         int            		type;
+	int			id;
+	char			*id_name;
         struct libtab   	*lib;
 	struct paramvalue	*params;
 } modtab[NMODS];
@@ -185,22 +180,17 @@ struct confnode {
 	char			*name;
 	struct modtab		*app;
 	struct modtab		*net;
-	struct modtab		*mac;
-	struct modtab		*radio;
+	struct modtab		*am;
 	struct paramvalue	*app_params;
 	struct paramvalue	*net_params;
-	struct paramvalue	*mac_params;
-	struct paramvalue	*radio_params;
+	struct paramvalue	*am_params;
 	char			*app_id_name;
-	int			app_id_value;
 	char			*net_id_name;
-	int			net_id_value;
-	char			*mac_id_name;
-	int			mac_id_value;
-	char			*radio_id_name;
-	int			radio_id_value;
+	char			*am_id_name;
+	int			am_inferior;			
 	int			counter;
-	int 			level;
+	char			*id_name;
+	int			daemon;
 };
 
 struct conftab {
@@ -218,25 +208,22 @@ struct confnode *conflook(struct symtab *conf_id);
 
 
 struct conf_id {
-	struct conf_ids		*parent;
 	struct symtab		*id;
 	struct confnode		*conf;
 };
 
 struct conf_ids {
-	struct conf_ids		*parent;
 	struct conf_ids		*confs;
 	struct conf_id		*conf;
-	int 			count;
 };
 
 struct statenode {
 	struct statenodes	*parent;
 	struct symtab		*id;
 	struct conf_ids		*confs;
+	char			*id_name;
 	int			counter;
 	int 			level;
-	int 			confs_counter;
 };
 
 struct statetab {
@@ -261,7 +248,7 @@ struct variable {
 	/** lenght of the variable - use for arrays */
 	int			length;
 	/* default variable value */
-	double			value;
+	long double		value;
 };
 
 

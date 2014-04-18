@@ -1,8 +1,7 @@
-configuration hello { 
+process hello { 
 	blink(1, 500)
 	nullNet()
-	nullMac()
-	nullRadio2() }
+	nullAM() }
 
 state simple { hello }
 

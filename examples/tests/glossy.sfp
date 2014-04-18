@@ -1,8 +1,0 @@
-
-configuration count { nullApp()
-			nullNet()
-			nullMac()
-			glossy()
-			}
-start count
-

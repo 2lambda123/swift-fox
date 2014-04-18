@@ -1,6 +1,0 @@
-configuration test { dbgs() nullNet() nullMac() cape() }
-
-state single { test }
-
-start single
-

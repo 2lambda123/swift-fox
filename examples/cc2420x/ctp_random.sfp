@@ -1,0 +1,17 @@
+uint16_t dest_node = 2
+uint16_t src_node = 0xFFFF
+
+configuration count { 
+	counter(60, 1024, src_node, dest_node) 
+	ctp(dest_node)
+	random()
+	cc2420x(26, 31, 0)
+	# channel, power, lpl
+}
+
+state test {
+	count
+}
+
+start test
+

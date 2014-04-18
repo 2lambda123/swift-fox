@@ -1,7 +1,0 @@
-
-configuration count { nullApp()
-			nullNet()
-			broadcast()
-			cc2420(2, 26, 31, 0, 0, 10, 10, 1, 1, 1)}
-start count
-

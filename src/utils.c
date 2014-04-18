@@ -51,6 +51,9 @@ converts type value (int) into string
 */
 char * type_name(int type_value) {
 	switch(type_value) {
+	case TYPE_BOOL:
+		return "bool";
+
 	case TYPE_UINT8_T:
 		return "uint8_t";
 

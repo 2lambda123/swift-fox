@@ -34,6 +34,7 @@
   */
 
 #include <stdio.h>
+#include <math.h>
 #ifdef __DEBUG__	/* link with the testing suite */
 #include <unistd.h>
 #include "common.h"
@@ -63,10 +64,11 @@ whitespace	{delim}+
 letter		[A-Za-z]
 digit		[0-9]
 number		(-)*[1-9]{digit}*
+floating	{number}\.{digit}+		
 newline		\n
 identifier	({letter}|_)({letter}|{digit}|_)*
 hex		0x([A-Fa-f]|{digit})+
-constant	{digit}|{number}|{hex}
+constant	{floating}|{digit}|{number}|{hex}|{floating}
 env_const	\$\(({letter}|{digit}|_)*\)
 path		(http:\/\/|\.|\/|{env_const})({letter}|{digit}|\.|\/|_|-|~)*
 comment		#.*
@@ -107,7 +109,7 @@ any		{
 			yylval.symp = symlook(yytext);
 #endif
 			return ANY;			}
-(configuration|conf|proc|process)	{
+(proc|process)	{
 #ifndef __DEBUG__
 #endif
 			return CONFIGURATION;		}
@@ -133,7 +135,6 @@ goto		{
 #ifndef __DEBUG__
 #endif
 			return GOTO;			}
-
 
 start		{
 #ifndef __DEBUG__
@@ -162,14 +163,10 @@ network		{
 #ifndef __DEBUG__
 #endif
 			return NETWORK;			}
-mac         {
+am         {
 #ifndef __DEBUG__
 #endif
-                        return MAC;                 }
-radio         {
-#ifndef __DEBUG__
-#endif
-                        return RADIO;                 }
+                        return AM;			}
 source		{
 #ifndef __DEBUG__
 #endif
@@ -220,7 +217,20 @@ or		{
 #ifndef __DEBUG__
 #endif
                         return CLOSE_SQUARE_BRACE;               }
+"*"	{
+#ifndef __DEBUG__
+#endif
+			return STAR;			}
+"!"	{
+#ifndef __DEBUG__
+#endif
+			return EXCLAMATION;		}
 
+bool		{
+#ifndef __DEBUG__
+			yylval.ival = TYPE_BOOL;
+#endif
+			return VARIABLE_TYPE;		}
 uint8_t		{
 #ifndef __DEBUG__
 			yylval.ival = TYPE_UINT8_T;
@@ -270,8 +280,6 @@ int32_t	{
 #endif
 			return VARIABLE_TYPE;		}
 
-
-
 {identifier}	{
 #ifndef __DEBUG__
 			yylval.symp = symlook(yytext);
@@ -285,7 +293,7 @@ int32_t	{
 			return PATH;			}
 {constant}	{
 #ifndef __DEBUG__
-			yylval.dval = atof(yytext);
+			yylval.ldval = atof(yytext);
 #endif
 			return CONSTANT;		}
 

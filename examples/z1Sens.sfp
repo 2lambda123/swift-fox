@@ -1,0 +1,10 @@
+
+process sensor { z1Sens(1, 1024) 
+			nullNet()
+			nullAM()
+}
+
+state test { sensor }
+
+start test
+
