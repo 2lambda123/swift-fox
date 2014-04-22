@@ -1,0 +1,56 @@
+uint8_t radio_tx_power = 0      # in    [ 0   1   2   3   4   5   6    7    8    9   10   11   12   13    14    15 ]
+                                # for   [3.5 3.3 2.8 2.3 1.8 1.2 0.5 -0.5 -1.5 -2.5 -3.5 -4.5 -6.5 -8.5 -11.5 -16.5] dBm
+uint8_t radio_channel = 26      # in    [11-26]
+uint16_t dest_node = 2
+uint16_t src_node = 0xFFFF
+
+process system_control ! {
+	StateSync()
+	nullNet()
+	*atm128rfa1()
+	# channel, power, lpl
+}
+
+process count {
+	counter(60, 1024, src_node, dest_node)
+	ctp(dest_node)
+	atm128rfa1(radio_channel, radio_tx_power, 0, 0)
+	# channel, power, lpl, slotted
+}
+
+process red { blink(1, 1024)
+	nullNet() 
+	*atm128rfa1()
+}
+
+process yellow { blink(2, 1024)
+	nullNet() 
+	*atm128rfa1()
+}
+
+event tiMo { timerMilliE(8500, 0xFFFF)
+	nullNet()
+	*atm128rfa1()
+}
+
+event tiMo2  { timerMilliE(5000, 0xFFFF)
+	nullNet()
+	*atm128rfa1()
+}
+
+event tiMo3  { timerMilliE(300000, 0xFFFF)
+	nullNet()
+	*atm128rfa1()
+}
+
+state led1 l 3 { red }
+state led2 { yellow }
+state collecting { count }
+
+from led1 goto led2 when tiMo
+from led2 goto collecting when tiMo2
+from collecting goto led1 when tiMo3
+
+start led1
+
+

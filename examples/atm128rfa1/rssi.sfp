@@ -1,0 +1,19 @@
+uint8_t radio_tx_power = 0      # in    [ 0   1   2   3   4   5   6    7    8    9   10   11   12   13    14    15 ]
+                                # for   [3.5 3.3 2.8 2.3 1.8 1.2 0.5 -0.5 -1.5 -2.5 -3.5 -4.5 -6.5 -8.5 -11.5 -16.5] dBm
+uint8_t radio_channel = 26      # in    [11-26]
+uint16_t test_delay = 1024      # in ms - how often a test packet is sent
+float rssi_scale = 3
+int8_t rssi_offset = -93	# -90 - 3 
+int8_t threshold1 = -80         # turn on 2nd LED (yellow)
+int8_t threshold2 = -50         # turn on 3rd LED (blue)
+
+process rssi_test { rssi(test_delay, rssi_scale, rssi_offset, threshold1, threshold2) 
+	nullNet()
+	atm128rfa1(radio_channel, radio_tx_power, 0)
+	# channel, power, sleepInterval
+}
+
+state test { rssi_test }
+
+start test
+

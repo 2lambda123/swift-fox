@@ -1,0 +1,55 @@
+uint8_t radio_tx_power = 0      #
+uint8_t radio_channel = 26      #
+uint16_t dest_node = 2
+uint16_t src_node = 0xFFFF
+
+process system_control ! {
+	StateSync()
+	nullNet()
+	*rf230()
+	# channel, power, lpl
+}
+
+process count {
+	counter(60, 1024, src_node, dest_node)
+	ctp(dest_node)
+	rf230(radio_channel, radio_tx_power, 0)
+	# channel, power, lpl
+}
+
+process red { blink(1, 1024)
+	nullNet() 
+	*rf230()
+}
+
+process yellow { blink(2, 1024)
+	nullNet() 
+	*rf230()
+}
+
+event tiMo { timerMilliE(8500, 0xFFFF)
+	nullNet()
+	*rf230()
+}
+
+event tiMo2  { timerMilliE(5000, 0xFFFF)
+	nullNet()
+	*rf230()
+}
+
+event tiMo3  { timerMilliE(300000, 0xFFFF)
+	nullNet()
+	*rf230()
+}
+
+state led1 l 3 { red }
+state led2 { yellow }
+state collecting { count }
+
+from led1 goto led2 when tiMo
+from led2 goto collecting when tiMo2
+from collecting goto led1 when tiMo3
+
+start led1
+
+
