@@ -1,0 +1,58 @@
+uint8_t rf212_radio_tx_power = 0xE8   #
+uint8_t rf212_radio_channel = 0       #
+uint8_t atm128rfa1_radio_tx_power = 0      #
+uint8_t atm128rfa1_radio_channel = 26      #
+uint16_t dest_node = 2
+uint16_t event_src = 3		# set to 0xFFFF if every node detects an event
+uint16_t src_node = 0xFFFF
+
+process system_control ! {
+	StateSync()
+	nullNet()
+	rf212(rf212_radio_channel, rf212_radio_tx_power, 200)
+	# channel, power, lpl
+}
+
+process count {
+	counter(60, 1024, src_node, dest_node)
+	ctp(dest_node)
+	atm128rfa1(atm128rfa1_radio_channel, atm128rfa1_radio_tx_power, 0)
+	# channel, power, lpl
+}
+
+process red { blink(1, 1024)
+	nullNet() 
+	*nullAM()
+}
+
+process yellow { blink(2, 1024)
+	nullNet() 
+	*nullAM()
+}
+
+event tiMo { timerMilliE(8500, event_src)
+	nullNet()
+	*nullAM()
+}
+
+event tiMo2  { timerMilliE(5000, event_src)
+	nullNet()
+	*nullAM()
+}
+
+event tiMo3  { timerMilliE(300000, event_src)
+	nullNet()
+	*nullAM()
+}
+
+state led1 l 3 { red }
+state led2 { yellow }
+state collecting { count }
+
+from led1 goto led2 when tiMo
+from led2 goto collecting when tiMo2
+from collecting goto led1 when tiMo3
+
+start led1
+
+
