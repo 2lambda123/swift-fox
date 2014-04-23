@@ -21,12 +21,12 @@ process count {
 
 process red { blink(1, 1024)
 	nullNet() 
-	*cc2420()
+	nullAM()
 }
 
 process yellow { blink(2, 1024)
 	nullNet() 
-	*cc2420()
+	nullAM()
 }
 
 event tiMo { timerMilliE(850000, event_src)
