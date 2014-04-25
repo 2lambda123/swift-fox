@@ -47,13 +47,14 @@ int main(int argc, char *argv[]) {
 	int i = 1;
 	struct stat s;
         char *fennec_fox_lib = getenv("FENNEC_FOX_LIB");
-	char *buff = malloc(strlen(fennec_fox_lib) + 15 );
+	char *buff;
 
         if (fennec_fox_lib == NULL) {
-                fprintf(stderr, "\n\nFENNEC_FOX_LIB is not set!\n");
+                fprintf(stderr, "\n\nFENNEC_FOX_LIB is not set!\n\n\n");
                 exit(1);
         }
 
+	buff = malloc(strlen(fennec_fox_lib) + 15 );
 	sprintf(buff, "%s/Fennec/sfc", fennec_fox_lib);
 
 	if (stat(buff, &s) == -1) {
