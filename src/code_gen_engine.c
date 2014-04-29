@@ -297,12 +297,12 @@ void generateFennecEngineP() {
 
 
 	fprintf(fp,"command error_t ModuleCtrl.start(module_t module_id) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"[-] FennecEngine ModuleCtrl.start(%%d)\", module_id);\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"[-] FennecEngine ModuleCtrl.start(%%d)\\n\", module_id);\n");
 	fprintf(fp,"\treturn call SplitControl.start[module_id]();\n");
 	fprintf(fp,"}\n\n");
 
 	fprintf(fp,"command error_t ModuleCtrl.stop(module_t module_id) {\n");
-	fprintf(fp,"\tdbg(\"FennecEngine\", \"[-] FennecEngine ModuleCtrl.stop(%%d)\", module_id);\n");
+	fprintf(fp,"\tdbg(\"FennecEngine\", \"[-] FennecEngine ModuleCtrl.stop(%%d)\\n\", module_id);\n");
 	fprintf(fp,"\treturn call SplitControl.stop[module_id]();\n");
 	fprintf(fp,"}\n\n");
 
@@ -311,11 +311,11 @@ void generateFennecEngineP() {
 	/* Interfaces with Computations */
 
 	fprintf(fp, "event void SplitControl.startDone[module_t module_id](error_t error) {\n");
-	fprintf(fp, "\tdbg(\"FennecEngine\", \"[-] FennecEngine SplitControl.startDone[%%d](%%d)\", module_id, error);\n");
+	fprintf(fp, "\tdbg(\"FennecEngine\", \"[-] FennecEngine SplitControl.startDone[%%d](%%d)\\n\", module_id, error);\n");
 	fprintf(fp, "\tsignal ModuleCtrl.startDone(error);\n");
 	fprintf(fp, "}\n\n");
 	fprintf(fp, "event void SplitControl.stopDone[module_t module_id](error_t error) {\n");
-	fprintf(fp, "\tdbg(\"FennecEngine\", \"[-] FennecEngine SplitControl.stopDone[%%d](%%d)\", module_id, error);\n");
+	fprintf(fp, "\tdbg(\"FennecEngine\", \"[-] FennecEngine SplitControl.stopDone[%%d](%%d)\\n\", module_id, error);\n");
 	fprintf(fp, "\tsignal ModuleCtrl.stopDone(error);\n");
 	fprintf(fp, "}\n\n");
 
