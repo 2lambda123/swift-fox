@@ -1,4 +1,4 @@
-process test { dbgs() nullNet() nullAM() }
+process test { dbgs(3) nullNet() nullAM() }
 
 state single { test }
 

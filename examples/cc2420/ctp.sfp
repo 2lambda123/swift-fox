@@ -5,7 +5,7 @@ uint16_t dest_node = 2
 uint16_t src_node = 0xFFFF
 
 process count {
-        counter(60, 1024, src_node, dest_node)
+        counter(3, 1024, src_node, dest_node)
         ctp(dest_node)
         cc2420(radio_channel, radio_tx_power, 200, 20, 1)
         # channel, power, sleepInterval, sleepDelay, autoAck
