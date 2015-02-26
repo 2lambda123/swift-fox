@@ -105,9 +105,12 @@ checkState(struct statenode *s) {
 	for (conf_ptr = s->confs; conf_ptr != NULL; conf_ptr = conf_ptr->confs) {
 		int not_inferior = 0;
 		struct conf_ids *cp;
+		struct conftab *cn;
+
+		/* compare against other processes in the same state */
 		for(cp = conf_ptr; cp != NULL; cp = cp->confs) {
 			if (conf_ptr->conf->conf->am->lib == cp->conf->conf->am->lib) {
-				not_inferior += !(cp->conf->conf->am_inferior);
+				not_inferior += cp->conf->conf->am_dominant;
 			}
 
 			if (not_inferior > 1) {
@@ -118,6 +121,43 @@ checkState(struct statenode *s) {
 				exit(1);
 			}
 		}
+
+		/* compare against daemon processes */
+		for(cn = conftab; cn < &conftab[NCONFS] && cn->conf != NULL; cn++) {
+			if (cn->conf->daemon) {
+				if (cn->conf->am->lib == conf_ptr->conf->conf->am->lib) {
+					not_inferior += cn->conf->am_dominant;
+				}
+
+				if (not_inferior > 1) {
+					/* ambigious match of AM in the state */
+					(void)fprintf(stderr, "error: too many dominant AM modules %s in the state %s vs. daemon %s\n",
+					conf_ptr->conf->conf->am->lib->name, s->id->name, cn->conf->name);
+					/* terminate */
+					exit(1);
+				}
+			}
+		}
+
+		/* check against events */
+		for(i = 0; i < policy_counter; i++) {
+			if (poltab[i].policy->from == s->id) {
+				if (poltab[i].policy->event_confs->conf->conf->am->lib == 
+							conf_ptr->conf->conf->am->lib) {
+					not_inferior += poltab[i].policy->event_confs->conf->conf->am_dominant;
+				}
+
+				if (not_inferior > 1) {
+					/* ambigious match of AM in the state */
+					(void)fprintf(stderr, "error: too many dominant AM modules %s in the state %s vs. event %s\n",
+					conf_ptr->conf->conf->am->lib->name, s->id->name, poltab[i].policy->event_confs->conf->conf->name);
+					/* terminate */
+					exit(1);
+				}
+			}
+		}
+
+
 	}
 
 	/* OK, no problems found */
@@ -275,55 +315,6 @@ checks if a module is valid
 /param mod_par_val pointer to structure with module parameter values
 /param par_type pointer to structure with module parameter tyles
 */
-void
-checkSingleModule(struct confnode *c, struct modtab *mp, 
-		struct paramvalue **mod_par_val, struct paramtype *par_type) {
-
-        /**
-	check if there are too many parameters 
-	*/
-        for(; *mod_par_val != NULL; mod_par_val = &(*mod_par_val)->child) {
-                /* check if there are more passed parameters then
-                 * there are defined variables 
-                 */
-                if ((par_type == NULL) && (*mod_par_val != NULL)) {
-		        (void)fprintf(stderr, "error: Too many parameters in "
-			"configuration %s in module %s defined as %s\n",
-        	                c->id->name, mp->lib->name, mp->lib->def);
-			/* terminate */
-			exit(1);
-                        break;
-                }
-
-                if (par_type != NULL)
-                        par_type = par_type->child;
-        }
-
-        /** 
-	check if parameters are missing 
-	*/
-        for (; (*mod_par_val == NULL) && (par_type != NULL); 
-		par_type = par_type->child, mod_par_val = &(*mod_par_val)->child) {
-                if (par_type->def_val->def_valid) {
-			/* TODO: add warning message? */
-			//printf("adding default param\n");
-			/* extend module's parameter list with the 
-			 * default values */
-			*mod_par_val = calloc(1, sizeof(struct paramvalue));
-			(*mod_par_val)->num_value = par_type->def_val->def_value;
-			(*mod_par_val)->child = NULL;
-                } else {
-			/* parameters are missing and there are no default
-			 * values defined to fill the missing ones */
-		        (void)fprintf(stderr, "error: Missing parameters in "
-			"configuration %s in module %s defined as %s - default "
-					"values are not defined\n",
-        	                c->id->name, mp->lib->name, mp->lib->def);
-			/* terminate */
-			exit(1);
-                }
-        }
-}
 
 /** 
 semantic check for modules passed to configuration 
@@ -336,17 +327,17 @@ checkConfigurationModules(struct confnode *c) {
 	/** 
 	check application module params 
 	*/
-	checkSingleModule(c, c->app, &(c->app_params), c->app->lib->params);
+//	checkSingleModule(c, c->app, &(c->app_params), c->app->lib->params);
 
 	/** 
 	check network module params 
 	*/
-	checkSingleModule(c, c->net, &(c->net_params), c->net->lib->params);
+//	checkSingleModule(c, c->net, &(c->net_params), c->net->lib->params);
 
 	/** 
 	check am module params 
 	*/
-	checkSingleModule(c, c->am, &(c->am_params), c->am->lib->params);
+//	checkSingleModule(c, c->am, &(c->am_params), c->am->lib->params);
 }
 
 /** 
@@ -415,6 +406,23 @@ to_conf_err:
 	exit(1);
 }
 
+void copy_events(struct conf_ids **dest, struct conf_ids *from) {
+	while(from != NULL) {
+		*dest = malloc(sizeof(struct conf_ids));
+		if (*dest == NULL) {
+			fprintf(stderr, "copy_events: malloc returned NULL\n");
+		}
+		(*dest)->conf = malloc(sizeof(struct conf_id));
+		if ((*dest)->conf == NULL) {
+			fprintf(stderr, "copy_events: malloc returned NULL\n");
+		}
+
+		memcpy((*dest)->conf, from->conf, sizeof(struct conf_id));	
+		dest = &(*dest)->confs;
+		from = from->confs;
+	}
+}
+
 void
 updateStatesWithEvents(struct policy *p) {
 	int i;
@@ -431,12 +439,12 @@ updateStatesWithEvents(struct policy *p) {
 			cids = statetab[i].state->confs;
 
 			if (cids == NULL) {
-				statetab[i].state->confs = p->event_confs;
+				copy_events(&(statetab[i].state->confs), p->event_confs);
 			} else {
 				while(cids->confs != NULL) {
 					cids = cids->confs;
 				}
-				cids->confs = p->event_confs;
+				copy_events(&(cids->confs), p->event_confs);
 			}
 		}
 	}	
@@ -485,17 +493,6 @@ adds configuration module
 /param p pointer to a pointer to a parameter value structue
 /param module_name string with module name
 */
-
-void
-addConfModule(struct confnode *c, struct modtab **m, struct paramvalue **p, char *module_name ) {
-}
-
-/**
-checks control state
-*/
-void
-checkControlState(void) {
-}
 
 
 

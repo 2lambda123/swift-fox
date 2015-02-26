@@ -37,6 +37,11 @@
 #include "traverse.h"
 #include "sem_check.h"
 #include "code_gen.h"
+#include "utils.h"
+#include "dbg_utils.h"
+
+struct modtab *current_module_gen = NULL;
+struct confnode *current_process_gen = NULL;
 
 /** 
 AST (Abstract Syntax Tree) traversal; 
@@ -56,7 +61,10 @@ traverse_program(struct program* p, int f, int policy_counter){
 			plain traversal 
 			*/
 			case TREE_TRAVERSE:
-				traverse_confnodes(p->defcon, f);
+				if (sfc_debug) {
+					printf("traverse: first pass (%d)\n", f);
+				}
+				traverse_processnodes(p->defcon, f);
 				traverse_statenodes(p->defstate, f);
 				traverse_policies(p->defpol, f);
 				traverse_initnode(p->init, f);
@@ -65,6 +73,9 @@ traverse_program(struct program* p, int f, int policy_counter){
 			traversal for semantic checking 
 			*/
 			case TREE_CHECK_SEMANTIC:
+				if (sfc_debug) {
+					printf("traverse: check seminatic (%d)\n", f);
+				}
 				/** 
 				zero the mapping structure 
 				*/
@@ -73,32 +84,87 @@ traverse_program(struct program* p, int f, int policy_counter){
 				zero the mapping structure 
 				*/
 				init_sem_evt();
-				
-				traverse_confnodes(p->defcon, f);
+
+				traverse_variables(p->vars, f);
+
+				if (adjust_global_offset > 0) {
+					print_variables(TYPE_VARIABLE_GLOBAL);
+				}
+
+				if (adjust_shared_offset > 0) {
+					print_variables(TYPE_VARIABLE_SHARED);
+				}
+		
+				if (sfc_debug) {
+					printf("traverse processnodes\n");
+				}
+				traverse_processnodes(p->defcon, f);
+
+				if (sfc_debug) {
+					printf("traverse statenodes\n");
+				}
 				traverse_statenodes(p->defstate, f);
+
+				if (sfc_debug) {
+					printf("traverse policies\n");
+				}
 				traverse_policies(p->defpol, f);
+
+				if (sfc_debug) {
+					printf("traverse initnode\n");
+				}
 				traverse_initnode(p->init, f);
+
+				if (sfc_debug) {
+					printf("traverse setUniqueVariableIDs\n");
+				}
+				setUniqueVariableIDs();
 				break;
 
 			/**
 			traversal for code generation 
 			*/
 			case TREE_GENERATE_CODE:
+				if (sfc_debug) {
+					printf("traverse: generate code (%d)\n", f);
+				}
 				setFiles();
+
 				initCodeGeneration();
-				startGlobalVariables();
+
+				initGlobalDataValues();
+				initLocalDataValues();
+				initSharedDataValues();
+
+				initGlobalDataH();
+				initSharedDataH();
 				traverse_variables(p->vars, f);
-				endGlobalVariables();
-				traverse_confnodes(p->defcon, f);
+				finishGlobalDataH();
+				finishSharedDataH();
+				globalDataMsgH();
+
+				switchGlobalToLocalDataStorage();
+
+				initLocalDataH();
+				traverse_processnodes(p->defcon, f);
+				setProcessesLookupTable();
+				finishLocalDataH();
+
 				traverse_statenodes(p->defstate, f);
 				traverse_policies(p->defpol, f);
 				traverse_initnode(p->init, f);
+
+				finishGlobalDataValues();
+				finishLocalDataValues();
+				finishSharedDataValues();
+
 				finishCodeGeneration(policy_counter);
 				break;
 			/** 
 			make the compiler happy 
 			*/
 			default:
+				printf("traverse: UNNOWN STATE (%d)\n", f);
 				break;
 		}
 	}
@@ -147,13 +213,16 @@ void
 traverse_variable(struct variable* sh, int f) {
 	switch (f) {
 	case TREE_TRAVERSE:
+		sh->used = 1;
 		break;
 
 	case TREE_CHECK_SEMANTIC:
+		pruneUnusedGlobalVariable(sh);
+		pruneUnusedSharedVariable(sh);
 		break;
 
 	case TREE_GENERATE_CODE:
-		addGlobalVariable(sh);
+		generateVariable(sh, current_process_gen, current_module_gen);
 		break;
 
 	default:
@@ -171,39 +240,31 @@ configuration traversal
 */
 
 void
-traverse_confnodes(struct confnodes* c, int f) {	
-	if (c != NULL){
+traverse_processnodes(struct processnodes* c, int f) {	
+	if (c != NULL) {
 		switch (f) {
 		case TREE_TRAVERSE:
-			traverse_confnodes(c->confs, f);
-			traverse_confnode(c->conf, f);
+			traverse_processnodes(c->confs, f);
+			traverse_process(c->conf, f);
 			break;
 
 		case TREE_CHECK_SEMANTIC:
-			traverse_confnodes(c->confs, f);
-			traverse_confnode(c->conf, f);
+			traverse_processnodes(c->confs, f);
+			traverse_process(c->conf, f);
 			break;
 
 		case TREE_GENERATE_CODE:
-			traverse_confnodes(c->confs, f);
-			traverse_confnode(c->conf, f);
+			traverse_processnodes(c->confs, f);
+			traverse_process(c->conf, f);
 			break;
 			
-		default:
-			break;
-		}
-	} else {
-		switch(f) {
-		case TREE_CHECK_SEMANTIC:
-			checkControlState();	
-			break;
-
 		default:
 			break;
 		}
 
 	}
 }
+
 
 /** 
 visit a single configuration
@@ -214,17 +275,32 @@ visit a single configuration
 */
 
 void
-traverse_confnode(struct confnode* c, int f) {	
+traverse_process(struct confnode* c, int f) {	
 	switch (f) {
 		case TREE_TRAVERSE:
+			traverse_variables(c->app->variables, f);
+			traverse_variables(c->net->variables, f);
+			traverse_variables(c->am->variables, f);
 			break;
 
 		case TREE_CHECK_SEMANTIC:
+			updateProcessVariables(c);
 			checkConfiguration(c);
 			checkConfigurationModules(c);
 			break;
         
 		case TREE_GENERATE_CODE:
+			print_process(c);
+
+			current_process_gen = c;
+			current_module_gen = c->app;
+			traverse_variables(c->app->variables, f);
+
+			current_module_gen = c->net;
+			traverse_variables(c->net->variables, f);
+
+			current_module_gen = c->am;
+			traverse_variables(c->am->variables, f);
 			break;
 
 		default:
@@ -258,7 +334,6 @@ traverse_statenodes(struct statenodes* s, int f) {
 	} else {
 		switch(f) {
 		case TREE_CHECK_SEMANTIC:
-//			checkControlState();	
 			break;
 
 		default:
@@ -277,8 +352,6 @@ traverse_statenode(struct statenode* s, int f) {
 
 		case TREE_CHECK_SEMANTIC:
 			checkState(s);
-//			checkConfiguration(c);
-//			checkConfigurationModules(c);
 			break;
         
 		case TREE_GENERATE_CODE:
@@ -341,7 +414,7 @@ traverse_policy(struct policy* p, int f) {
 			break;
         
        		case TREE_GENERATE_CODE:
-			proc_policy(p);
+			//proc_policy(p);
 			break;
 
        		default:

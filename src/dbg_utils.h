@@ -32,27 +32,13 @@
   */
 
 
-#ifndef __SEM_CHECK_H__
-#define __SEM_CHECK_H__
+#ifndef _SF_DBG_UTILS_H_
+#define _SF_DBG_UTILS_H_
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <ctype.h>
-#include "traverse.h"
 #include "sf.h"
 
-/* adapted from code_gen.h for semantic checking */
-
-void init_sem_conf(void);
-void init_sem_evt(void);
-void checkConfiguration(struct confnode *c);
-void checkConfigurationModules(struct confnode *c);
-void checkPolicy(struct policy *p);
-void updateStatesWithEvents(struct policy *p);
-void checkInitial(struct initnode *i);
-void checkState(struct statenode *s);
-void addConfState(struct confnode *c);
+void print_variables(int class_type);
+void print_process_module(struct modtab *mp);
+void print_process(struct confnode* c);
 
 #endif

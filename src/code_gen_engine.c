@@ -62,7 +62,7 @@ void generateFennecEngineC() {
   	fprintf(fp, "FennecEngineP.Fennec -> FennecC;\n\n");
 
 	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->lib->used && mp->type == TYPE_AM) {
+		if (mp->lib != NULL && mp->lib->path && mp->lib->used && mp->type == TYPE_AM && mp->duplicate == 0) {
 			fprintf(fp, "#define UQ_%s_QUEUE \"unique_%s_queue\"\n",
 					mp->id_name,
 					mp->lib->name);
@@ -74,10 +74,9 @@ void generateFennecEngineC() {
 			fprintf(fp, "FennecEngineP.SplitControl[%s] -> %sC.SplitControl;\n",
 					mp->id_name,
 					mp->lib->name);
-			fprintf(fp, "%sC.%sParams -> FennecEngineP.%sParams;\n", 
+			fprintf(fp, "%sC.Param -> FennecC.Param[%s, F_AM];\n", 
 					mp->lib->name,
-					mp->lib->name,
-					mp->lib->name);
+					mp->id_name);
 			fprintf(fp, "%sC.AMQueueControl -> %sSendQueueP;\n", 
 					mp->lib->name,
 					mp->lib->name);
@@ -107,13 +106,10 @@ void generateFennecEngineC() {
 					conftab[i].conf->app_id_name,
 					conftab[i].conf->id->name,
 					conftab[i].conf->app->lib->name);
-      		fprintf(fp, "FennecEngineP.%sParams[%s] <- %s_%s.%sParams;\n",
-					conftab[i].conf->app->lib->name,
+		fprintf(fp, "FennecC.Param[%s, F_APPLICATION] <- %s_%s.Param;\n", 
 					conftab[i].conf->id_name,
 					conftab[i].conf->id->name,
-					conftab[i].conf->app->lib->name, 
 					conftab[i].conf->app->lib->name);
-
 		fprintf(fp, "\n");
 
 		fprintf(fp, "components new %sC(%s) as %s_%s;\n",
@@ -125,11 +121,9 @@ void generateFennecEngineC() {
 					conftab[i].conf->net_id_name,
 					conftab[i].conf->id->name,
 					conftab[i].conf->net->lib->name); 
-      		fprintf(fp, "FennecEngineP.%sParams[%s] <- %s_%s.%sParams;\n", 
-					conftab[i].conf->net->lib->name, 
+		fprintf(fp, "FennecC.Param[%s, F_NETWORK] <- %s_%s.Param;\n", 
 					conftab[i].conf->id_name,
 					conftab[i].conf->id->name,
-					conftab[i].conf->net->lib->name, 
 					conftab[i].conf->net->lib->name);
 
 		fprintf(fp, "\n");
@@ -249,7 +243,14 @@ void generateFennecEngineC() {
 					conftab[i].conf->id->name,
 					conftab[i].conf->net->lib->name,
 					conftab[i].conf->am->lib->name);
-
+      		fprintf(fp, "%s_%s.SubPacketTimeStampMilli -> %sC.PacketTimeStampMilli;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->am->lib->name);
+      		fprintf(fp, "%s_%s.SubPacketTimeStamp32khz -> %sC.PacketTimeStamp32khz;\n",
+					conftab[i].conf->id->name,
+					conftab[i].conf->net->lib->name,
+					conftab[i].conf->am->lib->name);
 		fprintf(fp, "\n");
 	}
 
@@ -262,7 +263,6 @@ void generateFennecEngineP() {
 
         char *full_path = get_sfc_path("", "FennecEngineP.nc");
         FILE *fp = fopen(full_path, "w");
-	struct modtab *mp;
 
         if (fp == NULL) {
                 fprintf(stderr, "You do not have a permission to write into file: %s\n", full_path);
@@ -279,19 +279,6 @@ void generateFennecEngineP() {
 
 
 	fprintf(fp, "uses interface SplitControl[module_t module_id];\n");
-
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->lib->used) {
-			if (mp->type == TYPE_AM) {
-	      			fprintf(fp, "provides interface %sParams;\n", 
-						mp->lib->name);
-	                } else {
-      				fprintf(fp, "provides interface %sParams[process_t process_id];\n", 
-					mp->lib->name);
-			}
-		}
-        }
-
 	fprintf(fp,"}\n\n");
 	fprintf(fp,"implementation {\n\n");
 
@@ -306,7 +293,7 @@ void generateFennecEngineP() {
 	fprintf(fp,"\treturn call SplitControl.stop[module_id]();\n");
 	fprintf(fp,"}\n\n");
 
-	struct paramtype *pt;
+	//struct paramtype *pt;
 
 	/* Interfaces with Computations */
 
@@ -318,91 +305,6 @@ void generateFennecEngineP() {
 	fprintf(fp, "\tdbg(\"FennecEngine\", \"[-] FennecEngine SplitControl.stopDone[%%d](%%d)\\n\", module_id, error);\n");
 	fprintf(fp, "\tsignal ModuleCtrl.stopDone(error);\n");
 	fprintf(fp, "}\n\n");
-
-	for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-		if (mp->lib != NULL && mp->lib->path && mp->lib->used) {
-			/* check if the interface is empty, if it is add dummy call */
-			if (mp->lib->params == NULL) {
-				if (mp->type == TYPE_AM) {
-					fprintf(fp, "async command void %sParams.dummy() {}\n\n",
-						mp->lib->name);
-				} else {
-					fprintf(fp, "command void %sParams.dummy[process_t process_id]() {}\n\n",
-						mp->lib->name);
-				}
-			} else {
-				for (pt = mp->lib->params; pt != NULL; pt = pt->child ) {
-					if (mp->type == TYPE_AM) {
-						fprintf(fp, "async command %s %sParams.get_%s() {\n",
-							type_name(pt->type), 
-							mp->lib->name, 
-							pt->name);
-						fprintf(fp, "\tprocess_t process_id = call Fennec.getProcessIdFromAM(%s);\n",
-							mp->id_name);
-					} else {
-						fprintf(fp, "command %s %sParams.get_%s[process_t process_id]() {\n",
-							type_name(pt->type), 
-							mp->lib->name, 
-							pt->name);
-					}
-
-					if ((mp->type == TYPE_APPLICATION) || (mp->type == TYPE_EVENT)) {
-						fprintf(fp, "\treturn *((struct %s_params_ptr*)(processes[process_id].application_params))->%s;\n",
-							mp->lib->name,
-							pt->name);
-					}
-					if (mp->type == TYPE_NETWORK) {
-						fprintf(fp, "\treturn *((struct %s_params_ptr*)(processes[process_id].network_params))->%s;\n",
-							mp->lib->name,
-							pt->name);
-					}
-					if (mp->type == TYPE_AM) {
-						fprintf(fp, "\treturn *((struct %s_params_ptr*)(processes[process_id].am_params))->%s;\n",
-							mp->lib->name,
-							pt->name);
-					}
-
-					fprintf(fp, "}\n\n");
-
-					if (mp->type == TYPE_AM) {
-						fprintf(fp, "async command void %sParams.set_%s(%s new_%s) {\n",
-							mp->lib->name, 
-							pt->name, 
-							type_name(pt->type), 
-							pt->name);
-						fprintf(fp, "\tprocess_t process_id = call Fennec.getProcessIdFromAM(%s);\n",
-							mp->id_name);
-					} else {
-						fprintf(fp, "command void %sParams.set_%s[process_t process_id](%s new_%s) {\n",
-							mp->lib->name, 
-							pt->name, 
-							type_name(pt->type), 
-							pt->name);
-					}
-
-					if ((mp->type == TYPE_APPLICATION) || (mp->type == TYPE_EVENT)) {
-						fprintf(fp, "\t*((struct %s_params_ptr*)(processes[process_id].application_params))->%s = new_%s;\n",
-							mp->lib->name,
-							pt->name,
-							pt->name);
-					}
-					if (mp->type == TYPE_NETWORK) {
-						fprintf(fp, "\t*((struct %s_params_ptr*)(processes[process_id].network_params))->%s = new_%s;\n",
-							mp->lib->name,
-							pt->name,
-							pt->name);
-					}
-					if (mp->type == TYPE_AM) {
-						fprintf(fp, "\t*((struct %s_params_ptr*)(processes[process_id].am_params))->%s = new_%s;\n",
-							mp->lib->name,
-							pt->name,
-							pt->name);
-					}
-					fprintf(fp, "}\n\n");
-				}
-			}
-	        }
-	}
 
 	fprintf(fp, "default command error_t SplitControl.start[module_t module_id]() { return FAIL; }\n");
 	fprintf(fp, "default command error_t SplitControl.stop[module_t module_id]() { return FAIL; }\n");

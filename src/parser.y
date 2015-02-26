@@ -42,6 +42,7 @@
 #include <stdarg.h>
 #include "sf.h"
 #include "utils.h"
+#include "dbg_utils.h"
 #include "traverse.h"
 
 void initialize(void);
@@ -55,6 +56,10 @@ int conf_id_counter	= 0;
 int state_defined	= 0;
 int module_id_counter	= 0;
 
+int variable_memory_offset = 0;
+int global_memory_size = 0;
+int shared_memory_size = 0;
+
 int active_state;
 
 int file_status;
@@ -64,10 +69,7 @@ char *conf_state_suffix = "_cts";
 
 void yyerror(const char *errmsg, ...);
 int yylex(void);
-
-struct paramtype*
-process_module_parameter(int param_type, struct symtab* identifier, struct defvalue* default_value);
-
+int sfc_debug = 0;
 
 %}
 
@@ -82,7 +84,7 @@ process_module_parameter(int param_type, struct symtab* identifier, struct defva
 	double			dval;
 	long double		ldval;
 	struct confnode		*confp;
-	struct confnodes	*confsp;
+	struct processnodes	*confsp;
 	struct conf_id		*confid;
 	struct conf_ids		*confids;
 	struct event_id		*eventid;
@@ -106,7 +108,7 @@ process_module_parameter(int param_type, struct symtab* identifier, struct defva
 %token EQ SOURCE LF 
 %token OPEN_BRACE CLOSE_BRACE OPEN_PARENTHESIS CLOSE_PARENTHESIS
 %token OPEN_SQUARE_BRACE CLOSE_SQUARE_BRACE STAR EXCLAMATION
-%token LEVEL AT 
+%token LEVEL AT MALPA TILDE
 %token U_INT_EIGHT U_INT_SIXTEEN U_INT_THIRTY_TWO FLOAT DOUBLE
 
 
@@ -129,6 +131,7 @@ process_module_parameter(int param_type, struct symtab* identifier, struct defva
 %type <statep>	state
 %type <statesp>	states
 %type <statesp>	defined_states
+%type <vars>	defined_global_variables
 %type <vars>	global_variables
 %type <var>	global_variable
 %type <pol>	policy;
@@ -139,14 +142,15 @@ process_module_parameter(int param_type, struct symtab* identifier, struct defva
 %type <ival> 	state_level
 %type <ival> 	process_level
 %type <ival> 	module_level
+%type <ival> 	fast_switch
+%type <ival> 	global	
 %type <ival> 	array_part
 %type <ldval> 	assign_value
-%type <mtl>	module_parameters
-%type <mtl>	next_module_parameter
-%type <parv>	parameters
-%type <parv>	next_parameter
+%type <vars>	module_variables
+%type <var>	module_variable
+%type <vars>	parameters
+%type <var>	parameter
 %type <ival>	param_type
-%type <defv>	default_value
 %type <ival>	process_type
 
 %%
@@ -161,6 +165,12 @@ swiftfox: library program
 
 			/* traverse the AST for semantic checking */	
 			traverse_program($2,
+					TREE_TRAVERSE,
+					policy_counter);
+
+
+			/* traverse the AST for semantic checking */	
+			traverse_program($2,
 					TREE_CHECK_SEMANTIC,
 					policy_counter);
 
@@ -171,18 +181,19 @@ swiftfox: library program
 		}
 	;
 
-program: global_variables defined_processes defined_states policies initial_process 
+program: defined_global_variables defined_processes defined_states policies initial_process 
 		{
 			/* root node */
 			$$		= calloc(1, sizeof(struct program));
 			
 			/* link the node appropriately */
-			$2->parent	= NULL;  
+			if ($2 != NULL) 
+				$2->parent = NULL;  
 			if ($3 != NULL )
 				$3->parent = NULL;
 			if ($4 != NULL ) 
 				$4->parent = NULL;
-			
+		
 			/* init */
 			$$->vars	= $1;
 			$$->defcon	= $2;
@@ -193,9 +204,20 @@ program: global_variables defined_processes defined_states policies initial_proc
 	;
 
 
+defined_global_variables: global_variables
+		{
+			$$ = $1;
+
+			if (sfc_debug) {
+				printf("\n");
+			}
+			print_variables(TYPE_VARIABLE_GLOBAL);
+			print_variables(TYPE_VARIABLE_SHARED);
+		}
+
 global_variables: global_variables global_variable
                 {
-			/* global_variable set */
+			/* variable set */
 			$$ 		= calloc(1, sizeof(struct variables));
 
 			/* link the child nodes */
@@ -214,15 +236,37 @@ global_variables: global_variables global_variable
         ;
 
 
-global_variable: param_type IDENTIFIER array_part assign_value newlines 
+global_variable: param_type global IDENTIFIER array_part assign_value newlines 
 		{
-			$$		= calloc(1, sizeof(struct variable));
+			$$ 		= find_variable($3->name);
 			$$->type 	= $1;
-			$$->name	= $2;
-			$$->length	= $3;
-			$$->value	= $4;
-			$2->type	= TYPE_VARIABLE_GLOBAL;
+			$$->length	= $4;
+			$$->value	= $5;
+			if ($2) {
+				$$->offset	= global_memory_size;
+				$$->class_type	= TYPE_VARIABLE_GLOBAL;
+				global_memory_size += (type_size($$->type) * $$->length);
+			} else {
+				$$->offset	= shared_memory_size;
+				$$->class_type	= TYPE_VARIABLE_SHARED;
+				shared_memory_size += (type_size($$->type) * $$->length);
+			}
+			$$->init	= 1;
+			$$->cap_name 	= strdup($3->name);
+			$$->cap_name	= str_toupper($$->cap_name);
+			$$->global	= 1;
 		}
+
+global: MALPA
+		{
+			$$ = 1;
+		}
+	|
+		{
+			$$ = 0;
+		}
+	;
+
 
 array_part: OPEN_SQUARE_BRACE CONSTANT CLOSE_SQUARE_BRACE
 		{
@@ -252,7 +296,7 @@ assign_value: RELOP CONSTANT
 defined_processes: processes process
 		{
 			/* processes set */
-			$$		= calloc(1, sizeof(struct confnodes));
+			$$		= calloc(1, sizeof(struct processnodes));
 			
 			/* link the child nodes */
 			if ($1 != NULL)
@@ -262,12 +306,16 @@ defined_processes: processes process
 			$$->confs	= $1;
 			$$->conf	= $2;
 		}	
+	|
+		{
+			$$ = NULL;
+		}
 	;
 
 processes: processes process
 		{
 			/* processes set */
-			$$		= calloc(1, sizeof(struct confnodes));
+			$$		= calloc(1, sizeof(struct processnodes));
 			
 			/* link the child nodes */
 			if ($1 != NULL) 
@@ -299,7 +347,6 @@ process: process_type IDENTIFIER process_level OPEN_BRACE newlines module newlin
 				yyerror("expecting application module");
 			}
 			$$->app			= $6;
-			$$->app_params		= $6->params;
 			$$->app->lib->used 	= 1;
 
 
@@ -309,7 +356,6 @@ process: process_type IDENTIFIER process_level OPEN_BRACE newlines module newlin
 				yyerror("expecting network module");
 			}
 			$$->net			= $8;
-			$$->net_params		= $8->params;
 			$$->net->lib->used 	= 1;
 
 
@@ -319,8 +365,7 @@ process: process_type IDENTIFIER process_level OPEN_BRACE newlines module newlin
 				yyerror("expecting am module");
 			}
 			$$->am			= $11;
-			$$->am_params		= $11->params;
-			$$->am_inferior	= $10;
+			$$->am_dominant		= $10;
 			$$->am->lib->used 	= 1;
 
 
@@ -383,32 +428,26 @@ module_level: STAR
 module: IDENTIFIER OPEN_PARENTHESIS parameters CLOSE_PARENTHESIS
 		{
 			$$ = proc_module($1->name);
-			$$->params = $3;
+			$$->variables = $3;
+			if ($3 != NULL) {
+				$3->parent = NULL;
+			}
 		}		
 	;
 
-parameters: IDENTIFIER next_parameter
+parameters: parameters parameter
                 {
-                        struct symtab *sp = symlook($1->name);
-                        if (sp == NULL)
-                                yyerror("symtab pointer not found");
 
-			if (sp->type != TYPE_VARIABLE_GLOBAL)
-				yyerror("undefined variable");
+			$$              = calloc(1, sizeof(struct variables));
 
-                        /* paramvalue node */
-                        $$              = calloc(1, sizeof(struct paramvalue));
-			$$->child	= $2;
-                        $$->value       = $1;
-			$$->num_value	= 0;
-                }
-        | CONSTANT next_parameter
-                {
-                        /* pramvalue node */
-                        $$              = calloc(1, sizeof(struct paramvalue));
-                        $$->child       = $2;
-                        $$->value       = NULL;
-                        $$->num_value	= $1;
+			/* link the child nodes */
+			if ($1 != NULL)
+                                $1->parent = $$;
+
+                        $2->parent      = $$;
+
+                        $$->vars        = $1;
+                        $$->var         = $2;
                 }
 	|	
 		{
@@ -416,36 +455,39 @@ parameters: IDENTIFIER next_parameter
 		}
         ;
 
-next_parameter: COMMA IDENTIFIER next_parameter 
-                {
-                        struct symtab *sp = symlook($2->name);
-                        if (sp == NULL)
-                                yyerror("symtab pointer not found");
-
-			if (sp->type != TYPE_VARIABLE_GLOBAL)
-				yyerror("undefined variable");
-
-                        /* paramvalue node */
-                        $$              = calloc(1, sizeof(struct paramvalue));
-                        $$->child       = $3;
-                        $$->value       = $2;
-			$$->num_value	= 0;
-                }
-        | COMMA CONSTANT next_parameter
+parameter: CONSTANT
 		{
-                        /* pramvalue node */
-                        $$              = calloc(1, sizeof(struct paramvalue));
-                        $$->child       = $3;
-                        $$->value       = NULL;
-			$$->num_value	= $2;
+			$$		= find_variable("const");
+			$$->class_type	= TYPE_VARIABLE_LOCAL;
+			$$->value	= $1;
 		}
-	|
+	| newlines COMMA newlines CONSTANT
+		{
+			$$		= find_variable("const");
+			$$->class_type	= TYPE_VARIABLE_LOCAL;
+			$$->value	= $4;
+		}
+
+	| IDENTIFIER
                 {
-                        $$ = NULL;
+			struct variable *vp	= find_variable($1->name);
+			if ((vp->class_type != TYPE_VARIABLE_GLOBAL) && (vp->class_type != TYPE_VARIABLE_SHARED)) {
+				fprintf(stderr, "Variable %s is not global (or shared)\n", $1->name);
+				yyerror("undefined variable");
+			}
+			$$ = vp;
+
+                }
+	| newlines COMMA newlines IDENTIFIER
+                {
+			struct variable *vp	= find_variable($4->name);
+			if ((vp->class_type != TYPE_VARIABLE_GLOBAL) && (vp->class_type != TYPE_VARIABLE_SHARED)) {
+				fprintf(stderr, "Variable %s is not global (or shared)\n", $4->name);
+				yyerror("undefined variable");
+			}
+			$$ = vp;
                 }
         ;
-
-
 
 
 defined_states: states state
@@ -538,12 +580,20 @@ conf_ids: conf_ids newlines conf_id
 			$$->conf	= $3;
 
 		}
+	| conf_ids AND newlines conf_id
+		{
+			/* states set */
+			$$		= calloc(1, sizeof(struct conf_ids));
+			
+			/* link the child nodes */
+			$$->confs	= $1;
+			$$->conf	= $4;
+		}
 	| 	
 		{ 
 			$$ = NULL; 
 		}			
 	;
-
 
 
 conf_id: IDENTIFIER
@@ -554,9 +604,6 @@ conf_id: IDENTIFIER
 			$$->conf	= conflook($1);	
 		}
 	;
-
-
-
 
 
 policies: policies policy 
@@ -578,17 +625,18 @@ policies: policies policy
 		}		
 	;
 
-policy: FROM IDENTIFIER GOTO IDENTIFIER WHEN conf_ids newlines
+policy: fast_switch FROM IDENTIFIER GOTO IDENTIFIER WHEN conf_ids newlines
 		{
 			/* policy node */
 			$$ 		= calloc(1, sizeof(struct policy));
 
 			/* link child nodes */
-			$$->from	= $2;
-			$$->to		= $4;
+			$$->from	= $3;
+			$$->to		= $5;
 
-			$$->event_confs	= $6; 
+			$$->event_confs	= $7; 
 			$$->counter	= policy_counter;
+			$$->fast	= $1;
 
 			if (proc_policy($$)) {
 				fprintf(stderr, "Failed to store policy\n");
@@ -596,6 +644,17 @@ policy: FROM IDENTIFIER GOTO IDENTIFIER WHEN conf_ids newlines
 			}
 			++policy_counter;
 		}
+	;
+
+fast_switch: TILDE
+		{
+			$$ = 1;
+		}
+	|
+		{
+			$$ = 0;
+		}
+	;
 
 
 initial_process: START IDENTIFIER newlines
@@ -614,31 +673,51 @@ initial_process: START IDENTIFIER newlines
 
 
 library: newlines definitions
+		{
+			if (sfc_debug) {
+				printf("\n");
+			}
+			print_variables(TYPE_VARIABLE_DEFAULT);
+		}
 	;
 
 definitions: definitions definition 
         |
         ;
 
-definition: USE module_type IDENTIFIER PATH OPEN_PARENTHESIS newlines module_parameters newlines CLOSE_PARENTHESIS
+definition: USE module_type IDENTIFIER PATH OPEN_PARENTHESIS newlines module_variables newlines CLOSE_PARENTHESIS
 		{
 			/* iterator */
 			char *p = NULL;
 			
 			/* lookup */
 			struct symtab *sp = NULL;
-		
+
 			/* check for library re-declarations */
 			if ((sp = symlook($3->name)) != NULL && sp->type != TYPE_UNKNOWN)
 				/* failed */
 				yyerror("redeclaration of library");
 
+			if (sfc_debug) {
+				printf("define module: %s\n", $3->name);
+			}
+
 			/* fix the child properties */
 			$3->type = $2;
 			$3->lib = $4;
 
-			/* set params for the library */
-			$4->params = $7;
+			/* set variables for the library */
+			$4->variables = $7;
+
+			if (sfc_debug) {
+				struct variables *v = $7;
+				printf("\t%-10s \t%-20s \tVALUE\t\tINIT\tOFFSET\tCLASS_TYPE\n", "TYPE", "NAME");
+				for (v = $7; v != NULL; v=v->vars) {
+					printf("\t%-10d \t%-20s \t%-10.1Lf \t%d \t%d \t%d\n", v->var->type,
+					v->var->name, v->var->value, v->var->init, v->var->offset,
+					v->var->class_type);	
+				}
+			}
 
                         /* extract the name from the path */
                         if ((p = rindex($4->path, '/')) == NULL)
@@ -696,41 +775,44 @@ module_type: APPLICATION 	{ $$ = TYPE_APPLICATION; }
         ;
 
 
-module_parameters: param_type IDENTIFIER default_value next_module_parameter
+module_variables: module_variables module_variable
 		{
-			$$ = process_module_parameter($1, $2, $3);
-                        $$->child       = $4;
+			$$              = calloc(1, sizeof(struct variables));
+
+			/* link the child nodes */
+			if ($1 != NULL)
+				$1->parent = $$;
+
+			$2->parent      = $$;
+
+			$$->vars        = $1;
+			$$->var         = $2;
 		}
-	|
+	|       
 		{
 			$$ = NULL;
-		}
+		}                       
 	;
 
 
-default_value: RELOP CONSTANT
+module_variable: param_type IDENTIFIER assign_value newlines 
 		{
-			$$		= calloc(1, sizeof(struct defvalue));
-			$$->def_value	= $2;
-			$$->def_valid	= 1;
-		}
-	|
-		{
-			$$		= calloc(1, sizeof(struct defvalue));
-			$$->def_value	= 0;
-			$$->def_valid	= 0;
-		}
-	;
+			$$		= find_variable($2->name);
+			$$->type	= $1;
+			$$->value	= $3;
+			$$->init	= 1;
+			$$->length	= 1;
+			$$->class_type	= TYPE_VARIABLE_DEFAULT;
 
-
-next_module_parameter: newlines COMMA newlines param_type IDENTIFIER default_value next_module_parameter
-		{
-			$$ = process_module_parameter($4, $5, $6);
-			$$->child = $7;
 		}
-	|
+	| newlines COMMA newlines param_type IDENTIFIER assign_value newlines
 		{
-			$$ = NULL;
+			$$		= find_variable($5->name);
+			$$->type	= $4;
+			$$->value	= $6;
+			$$->init	= 1;
+			$$->length	= 1;
+			$$->class_type	= TYPE_VARIABLE_DEFAULT;
 		}
 	;
 
@@ -744,8 +826,6 @@ param_type: VARIABLE_TYPE
 			$$ = 0;
 		}
 	;
-
-
 
 newlines: newlines newline
 	|
@@ -766,11 +846,11 @@ extern int yyleng;
 
 /* main entry point */
 int
-start_parser(int argc, char *argv[]) {
+start_parser(char *pfile, char *lfile) {
 
 	/* check the file extention */
-	if (rindex(argv[1], '.') != NULL && !strcmp(rindex(argv[1], '.'), ".sfp")) {
-		argv[1][strlen(argv[1])-4] = '\0';
+	if (rindex(pfile, '.') != NULL && !strcmp(rindex(pfile, '.'), ".sfp")) {
+		pfile[strlen(pfile)-4] = '\0';
 	}
 		
 	/* init */
@@ -778,8 +858,10 @@ start_parser(int argc, char *argv[]) {
 	(void)memset(library_file, 0, PATH_SZ);
 	(void)memset(fennec_library_file, 0, PATH_SZ);
 
-	(void)snprintf(program_file, PATH_SZ, "%s.sfp", argv[1]);
-	(void)snprintf(library_file, PATH_SZ, "%s.sfl", argv[1]);
+	(void)snprintf(program_file, PATH_SZ, "%s.sfp", pfile);
+	if (lfile != NULL) {
+		(void)snprintf(library_file, PATH_SZ, "%s.sfl", lfile);
+	}
 	(void)snprintf(fennec_library_file, PATH_SZ, "%s/%s", 
 			getenv("FENNEC_FOX_LIB"), STD_FENNEC_FOX_LIB);
 
@@ -805,7 +887,7 @@ start_parser(int argc, char *argv[]) {
 		/* failed */
 		(void)fprintf(stderr, 
 			"%s.sfl: no such file or directory and no standard library\n",
-			argv[1]);
+			lfile);
 		exit(1);
 	}
 
@@ -853,7 +935,7 @@ yywrap(void) {
 	switch(file_status) {
 		case 1:
 			/* re-init */
-			yylineno		= 1;
+			yylineno	= 1;
 			file_status 	= 2;
 			file_name 	= library_file;
 
@@ -954,6 +1036,41 @@ find_module_symtab(char *s) {
 	return NULL;
 }
 
+struct variable *
+find_variable(char *varname) {
+        /* iterator */
+        struct variable *vp = NULL;
+
+	/* loop */
+	for(vp = vartab; vp < &vartab[NVARS]; vp++) {
+        	/* is it already here? */
+	        if (vp->name && (varname!=NULL) && !strcmp(vp->name, varname) &&
+			(vp->class_type == TYPE_VARIABLE_GLOBAL || vp->class_type == TYPE_VARIABLE_SHARED) && vp->global) {
+	      		return vp;
+		}
+
+		/* is it free */
+		if(!vp->name) {
+			if (varname != NULL) {
+				vp->name = strdup(varname);
+				vp->cap_name = strdup(vp->name);
+				vp->cap_name = str_toupper(vp->cap_name);
+			} else {
+				vp->cap_name = NULL;
+			}
+			vp->used = 0;
+			vp->offset = -1;
+			vp->id = -1;
+			vp->gname = NULL;
+			vp->global = 0;
+			return vp;
+		}
+		/* otherwise continue to next */
+	}
+	yyerror("vartab is full");
+	return NULL;
+}
+
 /* process_module */
 struct modtab *
 proc_module(char *s) {
@@ -964,6 +1081,7 @@ proc_module(char *s) {
 
         /* iterator */
         struct modtab *mp = NULL;
+	int duplicate = 0;
 
 	/* check if this is a know module */
 	if (sp == NULL) {
@@ -976,17 +1094,19 @@ proc_module(char *s) {
                 if(!mp->lib) {
 			mp->type = sp->type;
 			mp->lib = sp->lib;
-			mp->params = NULL;
+			mp->variables = NULL;
 			mp->name = strdup(sp->lib->name);
 			mp->id = ++module_id_counter;
 			mp->id_name = conf_module_name(mp->name, "module");
+			mp->duplicate = duplicate;
 			for(c = mp->name; *c != '\0'; c++ ) {
 				*c = toupper(*c);
 			}
                         return mp;
                 }
 		if (strcmp(mp->lib->def, sp->name) == 0) {
-			return mp;
+			duplicate = 1;
+		//	return mp;
 		}
         }
         yyerror("modtab is full");
@@ -996,9 +1116,7 @@ proc_module(char *s) {
 /* store policy */
 int
 proc_policy(struct policy *p) {
-
 	poltab[policy_counter].policy = p;
-
 //	poltab[policy_counter].src_conf = &p->from->value;
 //	poltab[policy_counter].event_mask = &p->mask_r;
 //	poltab[policy_counter].dst_conf = &p->to->value;
@@ -1102,26 +1220,6 @@ initialize(void) {
 	sp->name = "any";
 	sp->value = 253;
 	sp->type = TYPE_KEYWORD;
-}
-
-struct paramtype*
-process_module_parameter(int param_type, struct symtab* identifier, struct defvalue* default_value) {
-	struct paramtype* param;
-	struct symtab *sp = symlook(identifier->name);
-	if (sp == NULL)
-		yyerror("symtab pointer not found");
-
-	if (param_type == 0) {
-		fprintf(stderr, "missing parameter type in declaration of module %s\n",
-			identifier->name);
-		yyerror("parameter type not specified");
-	}
-
-	param = calloc(1, sizeof(struct paramtype));
-	param->type = param_type;
-	param->name = identifier->name;
-	param->def_val = default_value;
-	return param;
 }
 
 void printTable() {

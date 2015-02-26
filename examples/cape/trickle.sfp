@@ -1,0 +1,15 @@
+uint16_t src_node = 3
+
+configuration disseminate { counter(20, 1024, src_node, src_node) 
+			trickle(1, 1024, 1, 6)
+                        csmaca(src_node, 0, 10, 10, 1, 1, 1)
+                        # always ON, delay_after_receive, backoff, min_backoff
+                        # ack, cca, crc
+			cape()
+                        # channel, power, ack, crc
+			}
+
+state test {disseminate}
+
+start test
+

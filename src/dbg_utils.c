@@ -32,27 +32,81 @@
   */
 
 
-#ifndef __SEM_CHECK_H__
-#define __SEM_CHECK_H__
-
 #include <stdlib.h>
 #include <stdio.h>
-#include <fcntl.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <ctype.h>
-#include "traverse.h"
+#include <stdint.h>
+#include "utils.h"
+#include "dbg_utils.h"
 #include "sf.h"
+#include "parser.h"
 
-/* adapted from code_gen.h for semantic checking */
 
-void init_sem_conf(void);
-void init_sem_evt(void);
-void checkConfiguration(struct confnode *c);
-void checkConfigurationModules(struct confnode *c);
-void checkPolicy(struct policy *p);
-void updateStatesWithEvents(struct policy *p);
-void checkInitial(struct initnode *i);
-void checkState(struct statenode *s);
-void addConfState(struct confnode *c);
+/* prints all variables */
+void print_variables(int class_type) {
 
-#endif
+        /* iterator */
+        struct variable *vp = NULL;
+	int i;
+
+	if (!sfc_debug) {
+		return;
+	}
+
+	printf("#\t%-10s\t%-35s %-10s \tINIT\tOFFSET\tUSED\tID\t%-10s \tFULL_NAME\n", "TYPE", "NAME", "VALUE", "CLASS_TYPE");
+
+	/* loop */
+	for(i = 0, vp = vartab; vp < &vartab[NVARS]; i++, vp++) {
+		/* is it free */
+		if(!vp->name) {
+			break;
+		}
+
+		if (class_type != 0 && vp->class_type != class_type) {
+			continue;
+		}
+
+		printf("%d\t%-10s \t%-35s %-10.1Lf \t%d \t%d \t%d \t%d \t%-10d \t%s\n",
+				i, type_name(vp->type), vp->name, vp->value, vp->init,
+				vp->offset, vp->used, vp->id, vp->class_type, vp->cap_name);
+	}
+
+	printf("\n");
+}
+
+
+void print_process_module(struct modtab *mp) {
+	struct variables *mvar = mp->variables;
+
+        while(mvar != NULL && mvar->vars != NULL) {
+                mvar = mvar->vars;
+        }
+
+	if (!sfc_debug) {
+		return;
+	}
+
+	printf("\tModule %s\n", mp->name);
+	printf("\t\tTYPE \t%-35s %-10s \tINIT\tOFFSET\tUSED\tID\t%-10s \tFULL_NAME\n", "NAME", "VALUE", "CLASS_TYPE");
+
+	for(; mvar != NULL; mvar = mvar->parent) {
+		printf("\t\t%d \t%-35s %-10.1Lf \t%d \t%d \t%d \t%d \t%-10d \t%s\n", mvar->var->type,
+		mvar->var->name, mvar->var->value, mvar->var->init, mvar->var->offset,
+		mvar->var->used, mvar->var->id, mvar->var->class_type, mvar->var->cap_name);
+	}
+	printf("\n");
+}
+
+void print_process(struct confnode* c) {
+	if (!sfc_debug) {
+		return;
+	}
+
+	printf("Process %s\n", c->name);
+	print_process_module(c->app);
+	print_process_module(c->net);
+	print_process_module(c->am);
+
+}

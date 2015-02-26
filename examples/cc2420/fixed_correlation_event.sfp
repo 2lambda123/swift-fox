@@ -1,0 +1,82 @@
+uint8_t radio_tx_power = 31     # in    [31, 27, 23, 19, 15, 11, 7, 3]
+                                # for   [0, -1, -3, -5, -7, -10, -15, -25] dBm
+uint8_t radio_channel = 26      # in    [11-26]
+
+# count app parameters
+uint16_t dest_node = 2
+uint16_t src_node = 0xFFFF
+
+# neighbor app parameters
+uint8_t min_size = 3                    # neighborhood_min_size
+uint8_t poor_neighbors = 1              # max_num_of_poor_neighbors
+uint8_t good_etx = 80
+uint8_t num_to_check = 40
+uint16_t tx_delay = 3500
+
+uint16_t event_src = 3
+uint16_t data = 0
+
+# * designates dominant module
+# ! designates daemon
+
+# dummy process
+process yellow {
+	blink(2, 1024)
+	nullNet() 
+	*nullAM()
+}
+
+# daemon for state control
+process system_control ! {
+	StateSync()
+	rebroadcast(3, 30, 50)
+	cc2420()
+	# channel, power, lpl
+}
+
+process get_data {
+	fixSensorData(30, 1024, src_node, data)
+	nullNet()
+	nullAM()
+}
+
+
+# First process to setup the system
+process neighbors {
+	neighbor(min_size, poor_neighbors, good_etx,
+				num_to_check, radio_tx_power, tx_delay)
+	rebroadcast(0, 0, 0)
+	#cc2420()
+	*cc2420(radio_channel, radio_tx_power, 0, 100, 1)
+        # channel, power, sleepInterval, sleepDelay, autoAck
+}
+
+# Application process that does the job
+process count {
+	counter(120, 1024, src_node, dest_node)
+	ctp(dest_node)
+	*cc2420(radio_channel, radio_tx_power, 200, 100, 1)
+	# channel, power, sleepInterval, sleepDelay, autoAck
+}
+
+# event to start the bootup
+event time_to_bootup { timerMilliE(491520, event_src)	# wait 8 minutes
+	nullNet()
+	cc2420()
+}
+
+# event to switch to the app
+event finished_radio_setup { timerMilliE(3686400, event_src)
+	nullNet()
+	cc2420()
+}
+
+state idle { get_data }
+#state setting_up { neighbors }
+#state running_app { count }
+
+#from idle goto setting_up when time_to_bootup
+#from setting_up goto running_app when finished_radio_setup
+
+start idle
+

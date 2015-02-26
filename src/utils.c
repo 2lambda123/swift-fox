@@ -31,16 +31,21 @@
   * @author: Marcin K Szczodrak
   */
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <ctype.h>
+#include <stdint.h>
 #include "utils.h"
 #include "sf.h"
 #include "parser.h"
 
+int adjust_global_offset = 0;
+int adjust_shared_offset = 0;
+int unique_variable_id = 0;
+int variable_cache = 0;
+int number_of_variables_in_cache = 0;
 
 /**
 converts type value (int) into string
@@ -78,8 +83,60 @@ char * type_name(int type_value) {
 	case TYPE_DOUBLE:
 		return "double";
 
+	case TYPE_NXUINT8_T:
+		return "nx_uint8_t";
+
+	case TYPE_NXUINT16_T:
+		return "nx_uint16_t";
+
+	case TYPE_NXUINT32_T:
+		return "nx_uint32_t";
+
 	default:
 		return "";
+	}
+}
+
+int type_size(int type_value) {
+	switch(type_value) {
+	case TYPE_BOOL:
+		return sizeof(uint8_t);
+
+	case TYPE_UINT8_T:
+		return sizeof(uint8_t);
+
+	case TYPE_UINT16_T:
+		return sizeof(uint16_t);
+
+	case TYPE_UINT32_T:
+		return sizeof(uint32_t);
+
+	case TYPE_INT8_T:
+		return sizeof(int8_t);
+
+	case TYPE_INT16_T:
+		return sizeof(int16_t);
+
+	case TYPE_INT32_T:
+		return sizeof(int32_t);
+
+	case TYPE_FLOAT:
+		return sizeof(float);
+
+	case TYPE_DOUBLE:
+		return sizeof(double);
+
+	case TYPE_NXUINT8_T:
+		return sizeof(uint8_t);
+
+	case TYPE_NXUINT16_T:
+		return sizeof(uint16_t);
+
+	case TYPE_NXUINT32_T:
+		return sizeof(uint32_t);
+
+	default:
+		return 0;
 	}
 }
 
@@ -158,7 +215,6 @@ int get_policy_mask(struct policy *p) {
 	return mask;
 }
 
-
 int check_path(char *path) {
 	struct stat st;
 	char temp_path[PATH_SZ];
@@ -199,10 +255,180 @@ char *conf_module_name(char *conf, char *module) {
 	return str_toupper(n);
 }
 
+int updateModuleVariables(struct modtab *mp) {
+	struct variables *lvar = mp->lib->variables;
+	struct variables *mvar = mp->variables;
+	int number_of_variables = 0;
 
+	while(mvar != NULL && mvar->vars != NULL) {
+		mvar = mvar->vars;
+	}
 
+	while(lvar != NULL && lvar->vars != NULL) {
+		lvar = lvar->vars;
+	}
 
+	while (lvar != NULL) {
+		/* case when we use global variable */
+		if (mvar != NULL && ((mvar->var->class_type == TYPE_VARIABLE_GLOBAL) || (mvar->var->class_type == TYPE_VARIABLE_SHARED))) {
+			/* this already points to global variable, so should
+			 * be fine; just check if the type matches */
+			if (mvar->var->type != lvar->var->type) {
+				if (sfc_debug) {
+					printf("type mismatch %d vs %d\n", mvar->var->type, lvar->var->type);
+				}
+				fprintf(stderr, "module %s got variable %s of type %s, while the library expects type %s for variable %s\n",
+					mp->name,
+					mvar->var->name,
+					type_name(mvar->var->type),
+					type_name(lvar->var->type),
+					lvar->var->name);
+				exit(1);
+			}
+			/* still copy the application perspective name */
+			struct variable *global_var = mvar->var;
+			global_var->used = 1;
+			//mvar->var = malloc(sizeof(struct variable));
+			mvar->var = find_variable(lvar->var->name);
+			memcpy(mvar->var, global_var, sizeof(struct variable));
+			mvar->var->name = lvar->var->name;
+			mvar->var->gname =  global_var->name;
+			mvar->var->cap_name = lvar->var->cap_name;
+			mvar->var->global = 0;
+		}
 
+		/* case when we use a constant as a variable */
+		if (mvar != NULL && mvar->var->class_type == TYPE_VARIABLE_LOCAL) {
+			mvar->var->type = lvar->var->type;	
+			mvar->var->name = lvar->var->name;
+			mvar->var->length = lvar->var->length;
+			mvar->var->cap_name = lvar->var->cap_name;
+			mvar->var->offset = variable_memory_offset;
+			mvar->var->init = 1;
+			variable_memory_offset += (type_size(lvar->var->type) * lvar->var->length);
+		}
 
+		/* case when mvar is missing, so copy the lvar */
+		if (mvar == NULL) {
+			mvar = malloc(sizeof(struct variables));
+			mvar->var = find_variable(lvar->var->name);
+			mvar->parent = NULL;
+			mvar->vars = mp->variables;
 
+			if (mp->variables != NULL) {
+				mp->variables->parent = mvar;
+			}
+			mp->variables = mvar;
+
+			memcpy(mvar->var, lvar->var, sizeof(struct variable));
+			mvar->var->offset = variable_memory_offset;
+			mvar->var->class_type = TYPE_VARIABLE_LOCAL;
+
+			variable_memory_offset += (type_size(lvar->var->type) * lvar->var->length);
+		}
+
+		mvar->var->used = 1;
+		lvar->var->used = 1;
+
+		if (mvar != NULL) {
+			mvar = mvar->parent;
+		}
+		lvar = lvar->parent;
+		number_of_variables++;
+	}
+
+	if (mvar != NULL) {
+		fprintf(stderr, "more variables defined that declared\n");
+		exit(1);
+	}
+
+	/* Reverse order of variables.. this way they can be traversed in order */
+
+	return number_of_variables;
+}
+
+void updateProcessVariables(struct confnode* c) {
+	c->app_var_num = updateModuleVariables(c->app);
+	number_of_variables_in_cache += c->app_var_num;
+
+	c->net_var_num = updateModuleVariables(c->net);
+	number_of_variables_in_cache += c->net_var_num;
+
+	c->am_var_num = updateModuleVariables(c->am);
+	number_of_variables_in_cache += c->am_var_num;
+}
+
+void pruneUnusedGlobalVariable(struct variable *sh) {
+	int offset;
+	if (sh->class_type != TYPE_VARIABLE_GLOBAL) {
+		return;
+	}
+
+	sh->offset -= adjust_global_offset;
+
+	if (sh->used == 1) {
+		return;
+	}
+
+	if (sfc_debug) {
+		printf("Found unused variable: %s\n", sh->name);
+	}
+
+	sh->offset = -1;
+
+	offset = (type_size(sh->type) * sh->length);
+	adjust_global_offset += offset;
+	global_memory_size -= offset;
+}
+
+void pruneUnusedSharedVariable(struct variable *sh) {
+	int offset;
+	if (sh->class_type != TYPE_VARIABLE_SHARED) {
+		return;
+	}
+
+	sh->offset -= adjust_shared_offset;
+
+	if (sh->used == 1) {
+		return;
+	}
+
+	if (sfc_debug) {
+		printf("Found unused variable: %s\n", sh->name);
+	}
+
+	sh->offset = -1;
+
+	offset = (type_size(sh->type) * sh->length);
+	adjust_shared_offset += offset;
+	shared_memory_size -= offset;
+}
+
+void setUniqueVariableIDs() {
+	int i;
+	int j;
+	int uniqueId = 0;
+
+	for( i = 0; i < NVARS; i++ ) {
+		int skip = 0;
+		if (vartab[i].used == 0) {
+			continue;
+		}
+
+		for ( j = 0; j < i; j++ ) {
+			if (!strcmp(vartab[i].cap_name, vartab[j].cap_name) && (vartab[j].id >= 0)) {
+				skip = 1;
+				break;	
+			}
+		}
+		if (!skip) {
+			vartab[i].id = uniqueId;
+			uniqueId++;
+		}
+	}
+
+	if (uniqueId > 255) {
+		printf("Too many unique variables: %d\n", uniqueId);
+	}
+}
 

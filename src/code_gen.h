@@ -31,7 +31,6 @@
   * @author: Marcin K Szczodrak
   */
 
-
 #ifndef __CODE_GEN_H__
 #define __CODE_GEN_H__
 #define TEMP_CONF_FILE	"/tmp/tmp_conf_file_sfc"
@@ -55,17 +54,41 @@ void initCodeGeneration();
 
 void setFennecExtra();
 
-void startGlobalVariables();
+void initGlobalDataValues();
+void initLocalDataValues();
+void initSharedDataValues();
+
+void initGlobalDataH();
+void initLocalDataH();
+void initSharedDataH();
+
+void generateVariable(struct variable *sh, struct confnode* current_process_gen, struct modtab* current_module_gen);
 void addGlobalVariable(struct variable *sh);
-void endGlobalVariables();
+void addLocalVariable(struct variable *sh, struct confnode* current_process_gen, struct modtab* current_module_gen);
+
+void setGlobalVariableValue(struct variable *sh, struct confnode* current_process_gen, struct modtab* current_module_gen);
+void setSharedVariableValue(struct variable *sh, struct confnode* current_process_gen, struct modtab* current_module_gen);
+void setLocalVariableValue(struct variable *sh, struct confnode* current_process_gen, struct modtab* current_module_gen);
+
+void globalDataMsgH();
+
+void finishGlobalDataH();
+void finishLocalDataH();
+void finishSharedDataH();
+
+void finishGlobalDataValues();
+void finishLocalDataValues();
+void finishSharedDataValues();
+
+void switchGlobalToLocalDataStorage();
+
+void generateVariableConstants();
 
 void finishCodeGeneration(int policy_counter);
 
 void generateCaches(int event_counter, int policy_counter);
 
 void generateModules();
-
-void generateDefaultParams();
 
 void generateInitial(struct initnode *i);
 
@@ -75,5 +98,9 @@ void generateFennecEngineP();
 
 void generateParams();
 void generateGlobals();
+
+void checkModuleParameters(struct modtab* mp);
+
+void setProcessesLookupTable();
 
 #endif

@@ -31,28 +31,44 @@
   * @author: Marcin K Szczodrak
   */
 
+#include "code_gen.h"
+#include "utils.h"
 
-#ifndef __SEM_CHECK_H__
-#define __SEM_CHECK_H__
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <ctype.h>
-#include "traverse.h"
-#include "sf.h"
+void generateVariableConstants() {
+	char *full_path = get_sfc_path("", "variable_constants.h");
+	FILE *fp = fopen(full_path, "w");
+	int i;
 
-/* adapted from code_gen.h for semantic checking */
+	if (fp == NULL) {
+		fprintf(stderr, "You do not have a permission to write \
+						into file: %s\n", full_path);
+		exit(1);
+	}
 
-void init_sem_conf(void);
-void init_sem_evt(void);
-void checkConfiguration(struct confnode *c);
-void checkConfigurationModules(struct confnode *c);
-void checkPolicy(struct policy *p);
-void updateStatesWithEvents(struct policy *p);
-void checkInitial(struct initnode *i);
-void checkState(struct statenode *s);
-void addConfState(struct confnode *c);
+        fprintf(fp, "#ifndef _FF_VARIABLE_CONSTANTS_H_\n");
+        fprintf(fp, "#define _FF_VARIABLE_CONSTANTS_H_\n\n");
 
-#endif
+	for( i = 0; i < NVARS; i++ ) {
+		int skip = 0;
+		if (vartab[i].length == 0) {
+			continue;
+		}
+
+		if (vartab[i].id == -1) {
+			continue;
+		}
+
+		if (!skip) {
+			fprintf(fp, "#define %-15s \t%d\n",
+					vartab[i].cap_name,
+					vartab[i].id);
+		}
+	}
+
+        fprintf(fp, "\n#endif\n\n");
+        fclose(fp);
+        free(full_path);
+}
+
+

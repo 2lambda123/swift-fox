@@ -58,7 +58,6 @@ int main(int argc, char *argv[]) {
 	sprintf(buff, "%s/Fennec/sfc", fennec_fox_lib);
 
 	if (stat(buff, &s) == -1) {
-		//perror(buff);
 		fprintf(stderr, "\nWelcome to Fennec Fox compiler\n");
 		fprintf(stderr, "There is no Swift Fox program compiled\n");
 		if ((argc > 1) && !strcmp("clean", argv[1])) {

@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "sf.h"
 #include "code_gen.h"
 #include "parser.h"
@@ -84,6 +85,14 @@ void setFennecExtra() {
 		exit(1);
 	}
 
+	/* start with current working directory */
+	char cwd[2048];
+	if ( getcwd(cwd, sizeof(cwd) ) != NULL) {
+		fprintf(fp_fe, "PFLAGS+=-I%s\n", cwd);
+	} else {
+		perror("getcwd() error");
+	}
+
 	struct libtab *lp;
 	for(lp = libtab; lp < &libtab[NSYMS]; lp++) {
 		if (lp->path && lp->used == 1) {
@@ -102,13 +111,11 @@ code can be generated.
 */
 void finishCodeGeneration(int policy_counter) {
 	generateCaches(0, policy_counter);
-	generateDefaultParams();
 
 	generateFennecEngineC();
 
 	generateFennecEngineP();
-
-	generateParams();
+	generateVariableConstants();
 
 	setFennecExtra();
 }

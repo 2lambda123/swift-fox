@@ -33,8 +33,13 @@
 
 
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "sf.h"
+
+void print_help();
+void print_version();
 
 /** 
 the entry point to the sfc compiler
@@ -42,21 +47,93 @@ the entry point to the sfc compiler
 int
 main(int argc, char *argv[] ) {
 
+	char *pfile = NULL;
+	char *lfile = NULL;
+	int c;
+	int errflag = 0;
+
 	/** 
 	argument checking 
 	*/
-  	if (argc != ARGC_MAX) {
 
-		(void)fprintf(stderr, "%s: no input files\n\n", argv[0]);
-		(void)fprintf(stderr, "If your source program is located in");
-		(void)fprintf(stderr, " sample.sfp and sample.sfl, then run:");
-  		(void)fprintf(stderr, "\n\n$ %s sample\n\n", argv[0]);
-                exit(1);
-       	}
+	while ((c = getopt(argc, argv, "vhdp:l:")) != -1) {
+		//fprintf(stdout, "gets %c\n", c);
+		switch(c) {
+		case 'v':
+			print_version();
+			exit(0);
+		case 'h':
+			print_help();
+			exit(0);
+		case 'd':
+			sfc_debug = 1;
+			break;
+		case 'p':
+			pfile = optarg;
+			break;
+		case 'l':
+			lfile = optarg;
+			break;
+		case ':':
+			fprintf(stderr, "Option -%c requires an operand\n", optopt);
+			errflag++;
+			break;
+		case '?':
+			fprintf(stderr, "Unrecognized option: '-%c'\n", optopt);
+			errflag++;
+			break;
+		default:
+			fprintf(stderr, "Incorrect argument\n");
+			exit(1);
+		}
+	}
 
+	while (optind < argc) {
+		if (pfile == NULL) {
+			pfile = argv[optind];
+			optind++;
+			break;
+		}
+		if (lfile == NULL) {
+			lfile = argv[optind];
+			optind++;
+			break;
+		}
+		fprintf(stderr, "unrecognized additional parameters\n");
+		fprintf(stderr, "compilation terminated\n");
+		exit(1);
+	}
+
+	if (pfile == NULL) {
+		fprintf(stderr, "no input files\n");
+		fprintf(stderr, "compilation terminated.\n");
+		exit(1);
+	}
+
+	if (errflag) {
+		fprintf(stderr, "try %s -h  for help\n", argv[0]);
+		exit(1);
+	}
 
 	/** 
 	invoke the parser 
 	*/
-	return start_parser(argc, argv);
+	return start_parser(pfile, lfile);
+}
+
+void print_help() {
+	fprintf(stdout, "\nSwift Fox Compiler (sfc)\n");
+	fprintf(stdout, "Compiles Swift Fox programs into Fennec Fox system.\n");
+	fprintf(stdout, "\nUsage sfc [-vhd] [-p] <program file> [-l] <extra sfc library>\n");
+	fprintf(stdout, "Options:\n");
+	fprintf(stdout, "  %-10s %s\n", "-v", "Display compiler version");
+	fprintf(stdout, "  %-10s %s\n", "-h", "Display compiler help information");
+	fprintf(stdout, "  %-10s %s\n", "-d", "Compiler with debug statements");
+	fprintf(stdout, "  %-10s %s\n", "-s <file>", "Specify Swift Fox program source file");
+	fprintf(stdout, "  %-10s %s\n", "-l <file>", "Specify Swift Fox library file");
+	fprintf(stdout, "\n\n");
+}
+
+void print_version() {
+	fprintf(stdout, "\nSwift Fox Compiler version 0.9\n\n");
 }

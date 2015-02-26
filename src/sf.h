@@ -46,6 +46,7 @@
 #define NCONFS			256
 #define NSTATES			256
 #define NPOLS			256
+#define NVARS			256
 
 #define TYPE_UNKNOWN		0
 
@@ -63,6 +64,9 @@
 #define TYPE_STATE		13
 #define TYPE_KEYWORD		14
 #define TYPE_VARIABLE_GLOBAL	15
+#define TYPE_VARIABLE_LOCAL	16
+#define TYPE_VARIABLE_DEFAULT	17
+#define TYPE_VARIABLE_SHARED	18
 
 #define TYPE_BOOL		19
 #define TYPE_UINT8_T		20
@@ -73,9 +77,11 @@
 #define TYPE_INT8_T		25
 #define TYPE_INT16_T		26
 #define TYPE_INT32_T		27
+#define TYPE_NXUINT8_T		28
+#define TYPE_NXUINT16_T		29
+#define TYPE_NXUINT32_T		30
 
 #define PATH_SZ			256
-#define ARGC_MAX		2
 
 #define SEC_CONV		1024
 #define MIN_CONV		60 * SEC_CONV
@@ -99,15 +105,31 @@ extern int module_id_counter;
 extern int event_id_counter;
 extern int conf_id_counter;
 extern int state_defined;
+extern int unique_variable_id;
+
+extern int policy_counter;
+
+extern int variable_memory_offset;
+extern int global_memory_size;
+extern int shared_memory_size;
 
 extern char *conf_state_suffix;
 
-int start_parser(int argc, char *argv[]);
+extern int sfc_debug;
+extern int variable_cache;
+
+int start_parser(char *pfile, char *lfile);
 
 extern int yylineno;
 extern int yycolumn;
 
 char linebuf[BUF_SZ];
+
+extern int generate_globals;
+
+extern int adjust_global_offset;
+extern int adjust_shared_offset;
+extern int number_of_variables_in_cache;
 
 /**
 Symbol Table 
@@ -128,24 +150,11 @@ struct defvalue {
 	int 			def_valid;
 };
 
-struct paramtype {
-        struct paramtype        *child;
-	int			type;
-	struct defvalue		*def_val;
-        char                    *name;
-};
-
-struct paramvalue {
-	struct paramvalue	*child;	
-	struct symtab		*value;
-	long double		num_value;
-};
-
 struct libtab {
         char			*path;
 	char			*def;
 	char			*name;
-	struct paramtype	*params;
+	struct variables	*variables;
 	int			used;
 	int			type;
 	int			id;
@@ -163,31 +172,79 @@ struct evtab {
 
 struct evtab *evlook(char *);
 
+struct variable {
+	/** pointer to the structure with parent variables */
+	struct variables	*parent;
+	/** type of a variable encoded as intiger */
+	int			type;
+	/** memory offset in bytes */
+	int			offset;
+	/** pointer to a symtab containing the variable's name */
+	char			*name;
+	/** full varibale name, per process, per module */
+	char			*cap_name;
+	/** name if the variable points to global */
+	char			*gname;
+	/** lenght of the variable - use for arrays */
+	int			length;
+	/* default variable value */
+	long double		value;
+	/* variable initialized */
+	int			init;
+	/* variable type */
+	int			class_type;
+	/* variable id */
+	int			id;
+	/* is variable used */
+	int			used;
+	/* original global */
+	int			global;
+} vartab[NVARS];
+
+
+struct variables {
+	/** pointer to previous variable */
+	struct variables	*parent;	
+	/** pointer to further variable */
+	struct variables	*vars;
+	/** pointer to the variable structure */
+	struct variable		*var;
+};
+
+struct variable *find_variable(char *varname);
+
 struct modtab {
 	char			*name;
         int            		type;
 	int			id;
 	char			*id_name;
+	int			duplicate;
         struct libtab   	*lib;
-	struct paramvalue	*params;
+	struct variables	*variables;
 } modtab[NMODS];
 
 struct modtab *proc_module(char *);
 
 struct confnode {
-	struct confnodes	*parent;
+	struct processnodes	*parent;
 	struct symtab		*id;
 	char			*name;
 	struct modtab		*app;
 	struct modtab		*net;
 	struct modtab		*am;
-	struct paramvalue	*app_params;
-	struct paramvalue	*net_params;
-	struct paramvalue	*am_params;
+	int			app_var_num;
+	int			*app_var_name;
+	int			app_var_offset;
+	int			net_var_num;
+	int			*net_var_name;
+	int			net_var_offset;
+	int			am_var_num;
+	int			*am_var_name;
+	int			am_var_offset;
 	char			*app_id_name;
 	char			*net_id_name;
 	char			*am_id_name;
-	int			am_inferior;			
+	int			am_dominant;			
 	int			counter;
 	char			*id_name;
 	int			daemon;
@@ -198,9 +255,9 @@ struct conftab {
 } conftab[NCONFS];
 
 
-struct confnodes {
-	struct confnodes	*parent;
-	struct confnodes	*confs;
+struct processnodes {
+	struct processnodes	*parent;
+	struct processnodes	*confs;
 	struct confnode		*conf;
 };
 
@@ -238,31 +295,6 @@ struct statenodes {
 };
 
 
-struct variable {
-	/** pointer to the structure with parent variables */
-	struct variables	*parent;
-	/** type of a variable encoded as intiger */
-	int			type;
-	/** pointer to a symtab containing the variable's name */
-	struct symtab		*name;
-	/** lenght of the variable - use for arrays */
-	int			length;
-	/* default variable value */
-	long double		value;
-};
-
-
-struct variables {
-	/** pointer to previous variable */
-	struct variables	*parent;	
-	/** pointer to further variable */
-	struct variables	*vars;
-	/** pointer to the variable structure */
-	struct variable		*var;
-};
-
-
-
 struct policy {
 	/** pointer to parent policy */
 	struct policies		*parent;
@@ -274,6 +306,8 @@ struct policy {
 	struct conf_ids		*event_confs;
 	/** policy counter, and this policy number */
 	int 			counter;
+	/** light/fast switch policy */
+	int			fast;
 };
 
 struct policies {
@@ -292,7 +326,7 @@ struct initnode {
 
 struct program {
 	struct variables	*vars;
-	struct confnodes	*defcon;
+	struct processnodes	*defcon;
 	struct statenodes	*defstate;
 	struct policies		*defpol;
 	struct initnode		*init;

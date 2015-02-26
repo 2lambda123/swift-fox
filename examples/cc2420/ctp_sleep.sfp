@@ -1,0 +1,42 @@
+uint8_t @radio_tx_power = 31     # in    [31, 27, 23, 19, 15, 11, 7, 3]
+                                # for   [0, -1, -3, -5, -7, -10, -15, -25] dBm
+uint8_t radio_channel = 26      # in    [11-26]
+uint16_t dest_node = 11
+uint16_t src_node = 0xFFFF
+
+uint16_t event_src = 0xFFFF
+
+process system_control ! {
+        StateSync()
+        rebroadcast(3, 30, 50)
+        *cc2420(26, 31, 65534, 20, 1)
+        # channel, power, lpl
+}
+
+process count {
+        counter(30, 1024, src_node, dest_node)
+        ctp(dest_node)
+        cc2420(radio_channel, radio_tx_power, 0, 100, 1)
+        # channel, power, sleepInterval, sleepDelay, autoAck
+}
+
+process empty { nullApp() nullNet() nullAM() }
+
+event finish_reporting { timerSecondE(50, dest_node)
+        nullNet()
+        nullAM()
+}
+
+event wakeup { timerMinuteE(30, event_src)
+        nullNet()
+        nullAM()
+}
+
+state test { count }
+state sleep { empty }
+
+from test goto sleep when finish_reporting
+from sleep goto test when wakeup
+
+start test
+

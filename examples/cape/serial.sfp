@@ -1,0 +1,6 @@
+configuration test { testSerial(1, 1024) nullNet() nullMac() nullRadio() }
+
+state single { test }
+
+start single
+

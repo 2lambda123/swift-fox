@@ -41,8 +41,6 @@
 \param policy_counter number of policies found in Swift Fox program
 */
 
-
-
 void define_modules() {
 	char *full_path = get_sfc_path("", "ff_modules.h");
 	FILE *fp = fopen(full_path, "w");
@@ -61,7 +59,7 @@ void define_modules() {
 	fprintf(fp, "#define __FF_MODULES_H__\n\n");
 
         for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-                if (mp->lib != NULL && mp->lib->path && mp->lib->used) {
+                if (mp->lib != NULL && mp->lib->path && mp->lib->used && mp->duplicate == 0) {
 			fprintf(fp, "/* %s module located at %s */\n", mp->lib->name, mp->lib->path);
                         fprintf(fp, "#define %s\t%d\n\n", mp->id_name, ++id_counter);
                 }
@@ -83,6 +81,8 @@ void define_processes() {
 	char *full_path = get_sfc_path("", "ff_processes.h");
 	FILE *fp = fopen(full_path, "w");
 	int i;
+	//int vc;
+	//struct variables *mvar;
 
 	if (fp == NULL) {
 		fprintf(stderr, "You do not have a permission to write \
@@ -118,17 +118,37 @@ void define_processes() {
 		fprintf(fp, "\t\t.process_id = %s, \t/* %d */\n",
 				conftab[i].conf->id_name, conftab[i].conf->counter);
 		fprintf(fp, "\t\t.application = %s,\n", conftab[i].conf->app_id_name);
-		fprintf(fp, "\t\t.application_params = &%s_ptr,\n", conftab[i].conf->app_id_name);
 		fprintf(fp, "\t\t.application_module = %s,\n", conftab[i].conf->app->id_name);
+		if (conftab[i].conf->app_var_num > 0) {
+			fprintf(fp, "\t\t.application_variables_number = %d,\n", conftab[i].conf->app_var_num);
+			fprintf(fp, "\t\t.application_variables_offset = %d,\n", conftab[i].conf->app_var_offset);
+		} else {
+			fprintf(fp, "\t\t.application_variables_number = 0,\n");
+			fprintf(fp, "\t\t.application_variables_offset = 0,\n");
+		}
 
 		fprintf(fp, "\t\t.network = %s,\n", conftab[i].conf->net_id_name);
-		fprintf(fp, "\t\t.network_params = &%s_ptr,\n", conftab[i].conf->net_id_name);
 		fprintf(fp, "\t\t.network_module = %s,\n", conftab[i].conf->net->id_name);
+		if (conftab[i].conf->net_var_num > 0) {
+			fprintf(fp, "\t\t.network_variables_number = %d,\n", conftab[i].conf->net_var_num);
+			fprintf(fp, "\t\t.network_variables_offset = %d,\n", conftab[i].conf->net_var_offset);
+
+		} else {
+			fprintf(fp, "\t\t.network_variables_number = 0,\n");
+			fprintf(fp, "\t\t.network_variables_offset = 0,\n");
+		}
 
 		fprintf(fp, "\t\t.am = %s,\n", conftab[i].conf->am->id_name);
-		fprintf(fp, "\t\t.am_params = &%s_ptr,\n", conftab[i].conf->am_id_name);
 		fprintf(fp, "\t\t.am_module = %s,\n", conftab[i].conf->am->id_name);
-		fprintf(fp, "\t\t.am_level = %d\n", conftab[i].conf->am_inferior);
+		if (conftab[i].conf->am_var_num > 0) {
+			fprintf(fp, "\t\t.am_variables_number = %d,\n", conftab[i].conf->am_var_num);
+			fprintf(fp, "\t\t.am_variables_offset = %d,\n", conftab[i].conf->am_var_offset);
+		} else {
+			fprintf(fp, "\t\t.am_variables_number = 0,\n");
+			fprintf(fp, "\t\t.am_variables_offset = 0,\n");
+		}
+
+		fprintf(fp, "\t\t.am_dominant = %d\n", conftab[i].conf->am_dominant);
 		fprintf(fp, "\t}\n");
 		if (i+1 < conf_id_counter) {
 			fprintf(fp, "\t,\n");
@@ -140,11 +160,18 @@ void define_processes() {
 	fclose(fp);
 }
 
+void post_order_processes_confs(FILE *fp, struct conf_ids *conf_ptr) {
+	if (conf_ptr == NULL) {
+		return;
+	}
+	post_order_processes_confs(fp, conf_ptr->confs);
+	fprintf(fp, "\t&processes[%s],\n", conf_ptr->conf->conf->id_name);
+}
 
 void define_states() {
 	char *full_path = get_sfc_path("", "ff_states.h");
 	FILE *fp = fopen(full_path, "w");
-	struct conf_ids *conf_ptr;
+	//struct conf_ids *conf_ptr;
 	int i;
 
 	if (fp == NULL) {
@@ -175,9 +202,10 @@ void define_states() {
 	for( i = 0; i < state_id_counter; i++ ) {
 		fprintf(fp, "struct network_process* state_%s_processes[] = {\n", 
 				statetab[i].state->id->name);
-		for( conf_ptr = statetab[i].state->confs; conf_ptr; conf_ptr = conf_ptr->confs ) {
-			fprintf(fp, "\t&processes[%s],\n", conf_ptr->conf->conf->id_name);
-		}
+		post_order_processes_confs(fp, statetab[i].state->confs);
+//		for( conf_ptr = statetab[i].state->confs; conf_ptr; conf_ptr = conf_ptr->confs ) {
+//			fprintf(fp, "\t&processes[%s],\n", conf_ptr->conf->conf->id_name);
+//		}
 		fprintf(fp, "\tNULL\n");
 		fprintf(fp, "};\n\n");
 	}
@@ -216,7 +244,7 @@ void generateCaches(int event_counter, int policy_counter) {
 	char *full_path = get_sfc_path("", "ff_caches.h");
 	FILE *fp = fopen(full_path, "w");
 
-	struct modtab *mp;
+	//struct modtab *mp;
 	int i;
 
 	define_modules();
@@ -230,25 +258,17 @@ void generateCaches(int event_counter, int policy_counter) {
 	}
 
 	fprintf(fp, "/* Swift Fox generated code for Fennec Fox caches.h */\n");
-	fprintf(fp, "#ifndef __FF_CACHES_H__\n");
-	fprintf(fp, "#define __FF_CACHES_H__\n\n");
+	fprintf(fp, "#ifndef __FF_SHAREDS_H__\n");
+	fprintf(fp, "#define __FF_SHAREDS_H__\n\n");
 
 
 	fprintf(fp, "#define NUMBER_OF_EVENTS\t\t%d\n", event_id_counter);
 	fprintf(fp, "#define NUMBER_OF_POLICIES\t\t%d\n", policy_counter);
 	fprintf(fp, "#include <Fennec.h>\n");
-	fprintf(fp, "#include \"ff_defaults.h\"\n");
+	fprintf(fp, "#include \"variable_constants.h\"\n");
 	fprintf(fp, "#include \"ff_modules.h\"\n");
 	fprintf(fp, "#include \"ff_processes.h\"\n");
 	fprintf(fp, "#include \"ff_states.h\"\n\n");
-
-        for(mp = modtab; mp < &modtab[NSYMS]; mp++) {
-                if (mp->lib != NULL && mp->lib->path && mp->lib->used) {
-                        fprintf(fp, "#include \"%sParams.h\"\n",
-                                                mp->lib->name);
-                }
-        }
-        fprintf(fp, "\n");
 
 	/* list all daemon processes */
 	fprintf(fp, "struct network_process* daemon_processes[] = {\n");
@@ -277,6 +297,7 @@ void generateCaches(int event_counter, int policy_counter) {
         fprintf(fp, "struct fennec_policy policies[NUMBER_OF_POLICIES] = {\n");
 	for(i = 0; i < policy_counter; ) {
 		fprintf(fp, "\t{\n");
+		fprintf(fp, "\t\t.fast = %d,\n", poltab[i].policy->fast);
 		fprintf(fp, "\t\t.src_conf = %d,\n", poltab[i].policy->from->value);
 		fprintf(fp, "\t\t.event_mask = %d,\n", get_policy_mask(poltab[i].policy));
 		fprintf(fp, "\t\t.dst_conf = %d\n\n", poltab[i].policy->to->value);

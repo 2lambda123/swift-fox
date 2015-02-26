@@ -36,8 +36,15 @@
 #define _SF_UTILS_H_
 
 #include "sf.h"
+#include <stdio.h>
+#include <string.h>
+#include "traverse.h"
+#include "sem_check.h"
+#include "code_gen.h"
+#include "utils.h"
 
 char *type_name(int type_value);
+int type_size(int type_value);
 char *get_full_path(char *ffsrc_relative);
 char *get_sfc_path(char *file1, char *file2);
 int create_dir(char *ffsrc_relative);
@@ -46,5 +53,13 @@ int check_path(char *path);
 
 char *str_toupper(char *s);
 char *conf_module_name(char *conf, char *module);
+
+int updateModuleVariables(struct modtab *mp);
+void updateProcessVariables(struct confnode* c);
+
+void pruneUnusedGlobalVariable(struct variable *sh);
+void pruneUnusedSharedVariable(struct variable *sh);
+
+void setUniqueVariableIDs();
 
 #endif

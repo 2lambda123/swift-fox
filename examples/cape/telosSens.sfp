@@ -1,0 +1,11 @@
+configuration sense { telosSens(1, 1024)
+			ctp(1)
+			csmaca(1, 0, 10, 10, 1, 1, 1)
+			# always ON, delay_after_receive, backoff, min_backoff
+			# ack, cca, crc
+			cape()
+}
+
+state test { sense }
+
+start test
